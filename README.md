@@ -1,0 +1,1 @@
+# estudo-emotiv-android-comandos-mentais-pt-br
