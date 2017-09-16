@@ -22,7 +22,9 @@ public class CreateUser extends Activity {
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH = 0;
 	private BluetoothAdapter mBluetoothAdapter;
-	EditText etUserName; 
+
+	EditText etUserName;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,7 +82,7 @@ public class CreateUser extends Activity {
 
 					// permission denied, boo! Disable the
 					// functionality that depends on this permission.
-					Toast.makeText(this, "App can't run without this permission", Toast.LENGTH_SHORT).show();
+					Toast.makeText(this, "App não funcionará sem essa permissão", Toast.LENGTH_SHORT).show();
 				}
 				return;
 			}
@@ -96,12 +98,11 @@ public class CreateUser extends Activity {
 
 			}
 			if (resultCode == Activity.RESULT_CANCELED) {
-				Toast.makeText(this, "You must be turn on bluetooth to connect with Emotiv devices"
+				Toast.makeText(this, "Você deve ligar o bluetooth para conectar com Emotiv"
 						, Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
-
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -109,11 +110,10 @@ public class CreateUser extends Activity {
 		getMenuInflater().inflate(R.menu.create_user, menu);
 		return true;
 	}
+
 	public void onclickCreate(View v)
 	{
 //		if (etUserName.length() == 0) return;
-		
-		
 		Intent intent=new Intent(this,ActivityTrainning.class);
 		startActivity(intent);
 	}

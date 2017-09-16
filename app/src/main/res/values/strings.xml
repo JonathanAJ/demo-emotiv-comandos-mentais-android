@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MentalCommand</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_create_user">MentalCommand</string>
-    <string name="title_activity_activity_trainning">ActivityTrainning</string>
+    <string name="app_name">Comando Mental</string>
+    <string name="action_settings">Configurações</string>
+    <string name="hello_world">Olá!</string>
+    <string name="app_name_project">Projeto Mental PT-Br</string>
+    <string name="about">Sobre o projeto</string>
+    <string name="description">
+        Esse projeto demonstra como detectar e treinar 4 comandos mentais para maniular uma imagem 2D na tela do dispositivo.
+    </string>
+    <string name="title_activity_create_user">Usuário</string>
+    <string name="title_activity_activity_trainning">Treino</string>
 
 </resources>
