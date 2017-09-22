@@ -43,7 +43,7 @@ public class AdapterSpinner extends ArrayAdapter<DataSpinner> {
 		// TODO Auto-generated method stub
 		// return super.getView(position, convertView, parent);
 		Activity activity=(Activity)context;
-		 LayoutInflater inflater=activity.getLayoutInflater();
+		LayoutInflater inflater=activity.getLayoutInflater();
 		View row = inflater.inflate(R.layout.row, parent, false);
 		TextView label = (TextView) row.findViewById(R.id.tvTrain);
 		label.setTextColor(Color.parseColor("#000000"));

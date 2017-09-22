@@ -1,20 +1,86 @@
 <resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
 
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+        <item name="colorPrimary">@color/corVerde</item>
+        <item name="colorPrimaryDark">@color/corVerdeEscuro</item>
+        <item name="colorAccent">@color/corLaranjaLine</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColorHint">@color/corCinzaClaroHint</item>
+        <item name="android:textColorSecondary">@color/corVerde</item>
+
+        <item name="colorButtonNormal">@color/corLaranjaLine</item>
+        <item name="colorControlHighlight">@color/corLaranjaClaroLine</item>
     </style>
 
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    <style name="ButtonDel" parent="Theme.AppCompat.NoActionBar">
+
+        <item name="colorButtonNormal">@color/corLaranjaLine</item>
+        <item name="colorControlHighlight">@color/corLaranjaClaroLine</item>
+    </style>
+
+    <style name="PrimaryFlatButton" parent="Theme.AppCompat.Light">
+        <item name="android:buttonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="android:textColor">@color/corVerdeBt</item>
+    </style>
+
+    <style name="SecondaryFlatButton" parent="Theme.AppCompat.Light">
+        <item name="android:buttonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="android:textColor">@color/corLaranjaLine</item>
+    </style>
+
+    <style name="MySwitch" parent="Theme.AppCompat.Light">
+        <!-- active thumb & track color (30% transparency) -->
+        <item name="colorControlActivated">@color/corLaranjaLine</item>
+        <!-- inactive thumb color -->
+        <item name="colorSwitchThumbNormal">@color/corCinzaClaro</item>
+        <!-- inactive track color (30% transparency) -->
+        <item name="android:colorForeground">@color/corCinzaClaroHint</item>
+    </style>
+
+    <style name="textLine">
+        <item name="android:background">@drawable/text_line</item>
+        <item name="android:textSize">@dimen/texto_tamanho</item>
+        <item name="android:paddingLeft">26dp</item>
+        <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:textColor">@color/corCinzaEscuro</item>
+    </style>
+
+    <style name="editStyle">
+        <item name="android:background">@drawable/edit_text</item>
+        <item name="android:textSize">@dimen/texto_tamanho</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+        <item name="android:paddingLeft">18dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textColor">@color/corCinzaEscuro</item>
+    </style>
+
+    <style name="editStyleDisable">
+        <item name="android:background">@drawable/edit_text_disable</item>
+        <item name="android:textSize">@dimen/texto_tamanho</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:paddingLeft">18dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textColor">@color/corCinzaEscuro</item>
+    </style>
+
+    <style name="textStyle">
+        <item name="android:textSize">@dimen/texto_tamanho</item>
+        <item name="android:textColor">@color/corCinzaEscuro</item>
+    </style>
+
+    <style name="textStyleHint">
+        <item name="android:textSize">@dimen/texto_tamanho</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textColor">@color/corCinzaEscuro</item>
     </style>
 
 </resources>

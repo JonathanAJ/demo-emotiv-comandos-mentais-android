@@ -4,7 +4,20 @@
     <color name="color2">#ffbf3000</color>
     <color name="color3">#ffde9000</color>
     <color name="color4">#ff879900</color>
-     <color name="colorclear">#771f1f1f</color>
-      <color name="white_80">#60ffffff</color>
-          <color name="black_50">#90000000</color>
+    <color name="colorclear">#771f1f1f</color>
+    <color name="white_80">#60ffffff</color>
+    <color name="black_50">#90000000</color>
+    <color name="corBranca">#F4F4F9</color>
+    <color name="corVerde">#17A99C</color>
+    <color name="corVerdeEscuro">#136F63</color>
+    <color name="corAzulEscuro">#364652</color>
+    <color name="corCinzaClaro">#E1DFE5</color>
+    <color name="corCinzaClaroHint">#747376</color>
+    <color name="corCinzaEscuro">#161925</color>
+    <color name="corLaranja">#C84630</color>
+    <color name="corLaranjaClaro">#c76a5a</color>
+    <color name="corLaranjaLine">#f98546</color>
+    <color name="corLaranjaClaroLine">#E1C0AD</color>
+    <color name="corVerdeBt">#149A9A</color>
+    <color name="corVerdeBtPress">#53B2B2</color>
 </resources>

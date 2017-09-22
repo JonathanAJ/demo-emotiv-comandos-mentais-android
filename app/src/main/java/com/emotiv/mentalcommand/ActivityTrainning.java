@@ -11,7 +11,15 @@ import com.emotiv.insight.IEmoStateDLL.IEE_MentalCommandAction_t;
 import com.emotiv.insight.MentalCommandDetection;
 import com.emotiv.spinner.AdapterSpinner;
 import com.emotiv.spinner.DataSpinner;
+import com.emotiv.util.Util;
 
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -19,8 +27,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -30,41 +40,79 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-public class ActivityTrainning extends Activity implements EngineInterface {
+public class ActivityTrainning extends AppCompatActivity implements EngineInterface {
+
+	private static final int REQUEST_ENABLE_BT = 1;
+	private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH = 0;
+	private BluetoothAdapter mBluetoothAdapter;
 	
 	EngineConnector engineConnector;
 	
-	 Spinner spinnerAction;
-	 Button btnTrain,btnClear; 
-	 ProgressBar progressBarTime,progressPower;
-	 AdapterSpinner spinAdapter;
-	 ImageView imgBox;
-	 ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
-	 int indexSpinnerAction, _currentAction, userId = 0, count = 0;
-	 
-	 Timer timer;
-	 TimerTask timerTask;
-	 
-	 float _currentPower = 0;
-	 float startLeft     = -1;
-	 float startRight    = 0;
-	 float widthScreen   = 0;
-	  
-	 boolean isTrainning = false;
+	Spinner spinnerAction;
+	Button btnTrain,btnClear;
+	ProgressBar progressBarTime,progressPower;
+	AdapterSpinner spinAdapter;
+	ImageView imgBox;
+	ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
+	int indexSpinnerAction, _currentAction, userId = 0, count = 0;
+
+	Timer timer;
+	TimerTask timerTask;
+
+	float _currentPower = 0;
+	float startLeft     = -1;
+	float startRight    = 0;
+	float widthScreen   = 0;
+
+	boolean isTrainning = false;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_trainning);
-		/**
-		 * EngineConnector é a classe que controla
-		 * e se comunica com o Emotiv.
-		 */
-		engineConnector = EngineConnector.shareInstance();
-		engineConnector.delegate = this;
-		init();
+
+		final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+		mBluetoothAdapter = bluetoothManager.getAdapter();
+
+		Util.initToolbar(this, false, this.getResources().getString(R.string.app_name));
+
+		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			/*Android 6.0 and higher need to request permission*****/
+			if (ContextCompat.checkSelfPermission(this,
+					Manifest.permission.ACCESS_FINE_LOCATION)
+					!= PackageManager.PERMISSION_GRANTED) {
+
+				ActivityCompat.requestPermissions(this,
+						new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+						MY_PERMISSIONS_REQUEST_BLUETOOTH);
+			}else{
+				checkConnect();
+			}
+		}
+		else {
+			checkConnect();
+		}
 	}
-	public void init()
-	{
+
+	private void checkConnect(){
+		if (!mBluetoothAdapter.isEnabled()) {
+			/****Request turn on Bluetooth***************/
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+
+		}else {
+			/**
+			 * EngineConnector é a classe que controla
+			 * e se comunica com o Emotiv.
+			 */
+			EngineConnector.setContext(this);
+			engineConnector = EngineConnector.shareInstance();
+			engineConnector.delegate = this;
+			init();
+		}
+	}
+
+	public void init() {
 			spinnerAction =(Spinner)findViewById(R.id.spinnerAction);
 			btnTrain=(Button)findViewById(R.id.btstartTraing);
 			btnClear=(Button)findViewById(R.id.btClearData);
@@ -235,6 +283,7 @@ public class ActivityTrainning extends Activity implements EngineInterface {
 			}
 		};
 	}
+
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		    Display display = getWindowManager().getDefaultDisplay();
@@ -288,6 +337,7 @@ public class ActivityTrainning extends Activity implements EngineInterface {
 	public void userAdd(int userId) {
 		this.userId = userId;
 	}
+
 	@Override
 	public void currentAction(int typeAction, float power) {
 		progressPower.setProgress((int)(power * 100));
@@ -323,7 +373,7 @@ public class ActivityTrainning extends Activity implements EngineInterface {
 		alertDialogBuilder
 				.setMessage("Treinamento com sucesso. Você aceita este treinamento?")
 				.setCancelable(false)
-				.setIcon(R.drawable.ic_launcher)
+				.setIcon(R.mipmap.ic_launcher)
 				.setPositiveButton("Sim",
 						new DialogInterface.OnClickListener() {
 							public void onClick(
@@ -355,7 +405,7 @@ public class ActivityTrainning extends Activity implements EngineInterface {
 		alertDialogBuilder
 				.setMessage("Sinal com muito ruído. Não foi possível treinar")
 				.setCancelable(false)
-				.setIcon(R.drawable.ic_launcher)
+				.setIcon(R.mipmap.ic_launcher)
 				.setPositiveButton("OK",
 						new DialogInterface.OnClickListener() {
 							public void onClick(
@@ -425,8 +475,33 @@ public class ActivityTrainning extends Activity implements EngineInterface {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_trainning, menu);
-		return true;
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+		switch (requestCode) {
+			case MY_PERMISSIONS_REQUEST_BLUETOOTH: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					/****Request turn on Bluetooth***************/
+					Toast.makeText(this, "Permissão concedida", Toast.LENGTH_SHORT).show();
+					checkConnect();
+				} else {
+					// permission denied, boo! Disable the
+					// functionality that depends on this permission.
+					Toast.makeText(this, "App não funcionará sem essa permissão", Toast.LENGTH_SHORT).show();
+				}
+				break;
+			}
+		}
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQUEST_ENABLE_BT) {
+			if(resultCode == Activity.RESULT_OK){
+				Toast.makeText(this, "Bluetooth ligado", Toast.LENGTH_SHORT).show();
+			}
+			if (resultCode == Activity.RESULT_CANCELED) {
+				Toast.makeText(this, "Você deve ligar o bluetooth para conectar com Emotiv", Toast.LENGTH_SHORT).show();
+			}
+		}
 	}
 }
