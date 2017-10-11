@@ -30,6 +30,7 @@ import android.graphics.Point;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -65,6 +66,8 @@ public class ActivityTrainning extends AppCompatActivity implements EngineInterf
 	float widthScreen   = 0;
 
 	boolean isTrainning = false;
+
+	private final String TAG = "DebugEmotiv";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +151,13 @@ public class ActivityTrainning extends AppCompatActivity implements EngineInterf
 			progressBarTime.setVisibility(View.INVISIBLE);
 			progressPower = (ProgressBar)findViewById(R.id.ProgressBarpower);
 			imgBox = (ImageView)findViewById(R.id.imgBox);
+
+			Display display = getWindowManager().getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+			widthScreen = size.x;
+			startLeft = imgBox.getLeft();
+			startRight = imgBox.getRight();
 
 			// seta o spinner
 			setDataSpinner();
@@ -286,12 +296,12 @@ public class ActivityTrainning extends AppCompatActivity implements EngineInterf
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
-		    Display display = getWindowManager().getDefaultDisplay();
-			Point size = new Point();
-			display.getSize(size);
-			widthScreen = size.x;
-			startLeft = imgBox.getLeft();
-			startRight = imgBox.getRight();
+//		    Display display = getWindowManager().getDefaultDisplay();
+//			Point size = new Point();
+//			display.getSize(size);
+//			widthScreen = size.x;
+//			startLeft = imgBox.getLeft();
+//			startRight = imgBox.getRight();
 	}
 	
 	private void moveImage() {
