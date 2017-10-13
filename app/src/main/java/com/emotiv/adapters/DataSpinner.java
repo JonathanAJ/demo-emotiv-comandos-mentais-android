@@ -1,4 +1,4 @@
-package com.emotiv.spinner;
+package com.emotiv.adapters;
 
 public class DataSpinner {
 	private String tvName;

@@ -1,4 +1,4 @@
-package com.emotiv.getdata;
+package com.emotiv.dao;
 
 public interface EngineInterface {
 	//train

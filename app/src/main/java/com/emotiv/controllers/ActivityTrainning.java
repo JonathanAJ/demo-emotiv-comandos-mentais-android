@@ -1,16 +1,16 @@
-package com.emotiv.mentalcommand;
+package com.emotiv.controllers;
 
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.emotiv.getdata.EngineConnector;
-import com.emotiv.getdata.EngineInterface;
+import com.emotiv.dao.EngineConnector;
+import com.emotiv.dao.EngineInterface;
 import com.emotiv.insight.MentalCommandDetection.IEE_MentalCommandTrainingControl_t;
 import com.emotiv.insight.IEmoStateDLL.IEE_MentalCommandAction_t;
 import com.emotiv.insight.MentalCommandDetection;
-import com.emotiv.spinner.AdapterSpinner;
-import com.emotiv.spinner.DataSpinner;
+import com.emotiv.adapters.AdapterSpinner;
+import com.emotiv.adapters.DataSpinner;
 import com.emotiv.util.Util;
 
 import android.Manifest;
@@ -30,7 +30,6 @@ import android.graphics.Point;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -152,13 +151,6 @@ public class ActivityTrainning extends AppCompatActivity implements EngineInterf
 			progressPower = (ProgressBar)findViewById(R.id.ProgressBarpower);
 			imgBox = (ImageView)findViewById(R.id.imgBox);
 
-			Display display = getWindowManager().getDefaultDisplay();
-			Point size = new Point();
-			display.getSize(size);
-			widthScreen = size.x;
-			startLeft = imgBox.getLeft();
-			startRight = imgBox.getRight();
-
 			// seta o spinner
 			setDataSpinner();
 
@@ -255,27 +247,27 @@ public class ActivityTrainning extends AppCompatActivity implements EngineInterf
 		 */
 		model.clear();
 		DataSpinner data = new DataSpinner();
-		data.setTvName("Neutral");
+		data.setTvName("Neutro");
 		data.setChecked(engineConnector.checkTrained(IEE_MentalCommandAction_t.MC_NEUTRAL.ToInt()));
 		model.add(data);
 		
 		data=new DataSpinner();
-		data.setTvName("Push");
+		data.setTvName("Empurrar");
 		data.setChecked(engineConnector.checkTrained(IEE_MentalCommandAction_t.MC_PUSH.ToInt()));
 		model.add(data);
 		
 		data=new DataSpinner();
-		data.setTvName("Pull");
+		data.setTvName("Puxar");
 		data.setChecked(engineConnector.checkTrained(IEE_MentalCommandAction_t.MC_PULL.ToInt()));
 		model.add(data);
 		
 		data=new DataSpinner();
-		data.setTvName("Left");
+		data.setTvName("Esquerda");
 		data.setChecked(engineConnector.checkTrained(IEE_MentalCommandAction_t.MC_LEFT.ToInt()));
 		model.add(data);
 		
 		data=new DataSpinner();
-		data.setTvName("Right");
+		data.setTvName("Direita");
 		data.setChecked(engineConnector.checkTrained(IEE_MentalCommandAction_t.MC_RIGHT.ToInt()));
 		model.add(data);
 		
@@ -296,12 +288,14 @@ public class ActivityTrainning extends AppCompatActivity implements EngineInterf
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
-//		    Display display = getWindowManager().getDefaultDisplay();
-//			Point size = new Point();
-//			display.getSize(size);
-//			widthScreen = size.x;
-//			startLeft = imgBox.getLeft();
-//			startRight = imgBox.getRight();
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		widthScreen = size.x;
+		if (imgBox != null) {
+			startLeft = imgBox.getLeft();
+			startRight = imgBox.getRight();
+		}
 	}
 	
 	private void moveImage() {

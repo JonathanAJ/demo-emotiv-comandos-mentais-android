@@ -1,8 +1,7 @@
-package com.emotiv.spinner;
+package com.emotiv.adapters;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.Spinner;
 
 

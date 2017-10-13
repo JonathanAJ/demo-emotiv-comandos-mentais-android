@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import com.emotiv.mentalcommand.R;
+import com.emotiv.controllers.R;
 
 public class Util {
 

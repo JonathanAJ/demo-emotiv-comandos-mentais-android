@@ -1,8 +1,8 @@
-package com.emotiv.spinner;
+package com.emotiv.adapters;
 
 import java.util.ArrayList;
 
-import com.emotiv.mentalcommand.R;
+import com.emotiv.controllers.R;
 
 import android.app.Activity;
 import android.content.Context;
