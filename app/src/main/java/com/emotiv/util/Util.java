@@ -9,6 +9,8 @@ import com.emotiv.controllers.R;
 
 public class Util {
 
+    public static final String TAG = "DebugEmotiv";
+
     /**
      * Toolbar com o titulo da aplicacao
      * @param app activity
