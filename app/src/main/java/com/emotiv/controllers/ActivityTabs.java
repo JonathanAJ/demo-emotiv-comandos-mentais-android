@@ -61,10 +61,6 @@ public class ActivityTabs extends AppCompatActivity {
         return engineConnector;
     }
 
-    public void setEngineConnector(EngineConnector engineConnector) {
-        this.engineConnector = engineConnector;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,8 +101,7 @@ public class ActivityTabs extends AppCompatActivity {
              * EngineConnector é a classe que controla
              * e se comunica com o Emotiv.
              */
-            EngineConnector.setContext(this);
-            engineConnector = EngineConnector.shareInstance();
+            engineConnector = EngineConnector.shareInstance(this);
             Log.d(Util.TAG, "EngineConnector");
 
             TabsAdapter adapter = new TabsAdapter( getSupportFragmentManager(), this);
@@ -183,6 +178,7 @@ public class ActivityTabs extends AppCompatActivity {
             }
         }
     }
+    
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
