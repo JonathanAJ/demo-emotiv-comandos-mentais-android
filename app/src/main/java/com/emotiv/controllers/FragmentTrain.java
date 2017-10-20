@@ -7,12 +7,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -22,9 +22,8 @@ import android.widget.Toast;
 
 import com.emotiv.adapters.AdapterSpinner;
 import com.emotiv.adapters.DataSpinner;
-import com.emotiv.dao.EngineConnector;
-import com.emotiv.dao.EngineInterface;
-import com.emotiv.dao.OnFocusInterface;
+import com.emotiv.dao.EngineTrain;
+import com.emotiv.interfaces.EngineTrainInterface;
 import com.emotiv.insight.IEmoStateDLL;
 import com.emotiv.insight.MentalCommandDetection;
 
@@ -32,22 +31,21 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class FragmentTreino extends Fragment implements EngineInterface, OnFocusInterface {
+public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
-    Spinner spinnerAction;
-    Button btnTrain,btnClear;
-    ProgressBar progressBarTime,progressPower;
-    AdapterSpinner spinAdapter;
-    ImageView imgBox;
-    ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
-    int indexSpinnerAction, _currentAction, userId = 0, count = 0;
+    private Spinner spinnerAction;
+    private Button btnTrain,btnClear;
+    private ProgressBar progressBarTime,progressPower;
+    private AdapterSpinner spinAdapter;
+    private ImageView imgBox;
+    private ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
+    private int indexSpinnerAction, _currentAction, userId = 0, count = 0;
 
-    private BottomNavigationView bottomNavigationView;
     private ActivityTabs activityContext;
-    private EngineConnector engineConnector;
+    private EngineTrain engineTrain;
 
-    Timer timer;
-    TimerTask timerTask;
+    private Timer timer;
+    private TimerTask timerTask;
 
     float _currentPower = 0;
     float startLeft     = -1;
@@ -65,13 +63,10 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
         return rootView;
     }
 
-
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        engineConnector = activityContext.getEngineConnector();
-        engineConnector.delegate = this;
+        engineTrain = EngineTrain.shareInstance(this);
         init();
     }
 
@@ -88,19 +83,19 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
             public void onClick(View arg0) {
                 switch (indexSpinnerAction) {
                     case 0:
-                        engineConnector.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_NEUTRAL);
+                        engineTrain.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_NEUTRAL);
                         break;
                     case 1:
-                        engineConnector.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH);
+                        engineTrain.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH);
                         break;
                     case 2:
-                        engineConnector.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL);
+                        engineTrain.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL);
                         break;
                     case 3:
-                        engineConnector.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT);
+                        engineTrain.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT);
                         break;
                     case 4:
-                        engineConnector.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT);
+                        engineTrain.trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT);
                         break;
                     default:
                         break;
@@ -111,6 +106,21 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
         progressBarTime.setVisibility(View.INVISIBLE);
         progressPower = (ProgressBar) rootView.findViewById(R.id.ProgressBarpower);
         imgBox = (ImageView) rootView.findViewById(R.id.imgBox);
+
+        final ViewTreeObserver viewTreeObserver = rootView.getViewTreeObserver();
+        viewTreeObserver.addOnWindowFocusChangeListener(new ViewTreeObserver.OnWindowFocusChangeListener() {
+            @Override
+            public void onWindowFocusChanged(final boolean hasFocus) {
+                Display display = activityContext.getWindowManager().getDefaultDisplay();
+                Point size = new Point();
+                display.getSize(size);
+                widthScreen = size.x;
+                if (imgBox != null) {
+                    startLeft = imgBox.getLeft();
+                    startRight = imgBox.getRight();
+                }
+            }
+        });
 
         // seta o spinner
         setDataSpinner();
@@ -128,7 +138,7 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
 
             @Override
             public void onClick(View v) {
-                if(!engineConnector.isConnected) {
+                if(!engineTrain.isConnected()) {
                     Toast.makeText(activityContext, "Você precisa conectar seu Emotiv", Toast.LENGTH_SHORT).show();
                 }
                 else{
@@ -137,19 +147,19 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
                             startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t.MC_NEUTRAL);
                             break;
                         case 1:
-                            engineConnector.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH);
+                            engineTrain.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH);
                             startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH);
                             break;
                         case 2:
-                            engineConnector.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL);
+                            engineTrain.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL);
                             startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL);
                             break;
                         case 3:
-                            engineConnector.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT);
+                            engineTrain.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT);
                             startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT);
                             break;
                         case 4:
-                            engineConnector.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT);
+                            engineTrain.enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT);
                             startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT);
                             break;
                         default:
@@ -178,7 +188,7 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
             switch (msg.what) {
                 case 0:
                     count ++;
-                    int trainningTime=(int) MentalCommandDetection.IEE_MentalCommandGetTrainingTime(userId)[1]/1000;
+                    int trainningTime = (int) MentalCommandDetection.IEE_MentalCommandGetTrainingTime(userId)[1]/1000;
                     if(trainningTime > 0)
                         progressBarTime.setProgress(count / trainningTime);
                     if (progressBarTime.getProgress() >= 100) {
@@ -196,7 +206,7 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
     };
 
     public void startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t MentalCommandAction) {
-        isTrainning = engineConnector.startTrainingMentalcommand(isTrainning, MentalCommandAction);
+        isTrainning = engineTrain.startTrainingMentalcommand(isTrainning, MentalCommandAction);
         btnTrain.setText((isTrainning) ? "Abortar treino" : "Treinar");
     }
 
@@ -209,18 +219,6 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
                 handlerUpdateUI.sendEmptyMessage(0);
             }
         };
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        Display display = activityContext.getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        widthScreen = size.x;
-        if (imgBox != null) {
-            startLeft = imgBox.getLeft();
-            startRight = imgBox.getRight();
-        }
     }
 
     private void moveImage() {
@@ -306,13 +304,13 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
                         new DialogInterface.OnClickListener() {
                             public void onClick(
                                     DialogInterface dialog,int which) {
-                                engineConnector.setTrainControl(MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_ACCEPT.getType());
+                                engineTrain.setTrainControl(MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_ACCEPT.getType());
                             }
                         })
                 .setNegativeButton("Não",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                engineConnector.setTrainControl(MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_REJECT.getType());
+                                engineTrain.setTrainControl(MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_REJECT.getType());
                             }
                         });
 
@@ -367,21 +365,29 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
 
     @Override
     public void trainErased() {
-        new AlertDialog.Builder(activityContext)
-                .setTitle("Treinamento apagado")
-                .setMessage("")
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
         DataSpinner data = model.get(indexSpinnerAction);
         data.setChecked(false);
         model.set(indexSpinnerAction, data);
         spinAdapter.notifyDataSetChanged();
         enableClick();
         isTrainning = false;
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityContext);
+        // set title
+        alertDialogBuilder.setTitle("Apagado");
+        // set dialog message
+        alertDialogBuilder
+                .setMessage("Treinamento - " + data.getTvName() + " - apagado com sucesso!")
+                .setCancelable(false)
+                .setIcon(R.mipmap.ic_launcher)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     @Override
@@ -403,27 +409,27 @@ public class FragmentTreino extends Fragment implements EngineInterface, OnFocus
         model.clear();
         DataSpinner data = new DataSpinner();
         data.setTvName("Neutro");
-        data.setChecked(engineConnector.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_NEUTRAL.ToInt()));
+        data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_NEUTRAL.ToInt()));
         model.add(data);
 
         data=new DataSpinner();
         data.setTvName("Empurrar");
-        data.setChecked(engineConnector.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()));
+        data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()));
         model.add(data);
 
         data=new DataSpinner();
         data.setTvName("Puxar");
-        data.setChecked(engineConnector.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()));
+        data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()));
         model.add(data);
 
         data=new DataSpinner();
         data.setTvName("Esquerda");
-        data.setChecked(engineConnector.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt()));
+        data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt()));
         model.add(data);
 
         data=new DataSpinner();
         data.setTvName("Direita");
-        data.setChecked(engineConnector.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT.ToInt()));
+        data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT.ToInt()));
         model.add(data);
 
         spinAdapter = new AdapterSpinner(activityContext, R.layout.row, model);

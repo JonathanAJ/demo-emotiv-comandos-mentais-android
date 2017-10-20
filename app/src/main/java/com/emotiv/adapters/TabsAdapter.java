@@ -8,7 +8,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import com.emotiv.controllers.ActivityTabs;
 import com.emotiv.controllers.FragmentGame;
 import com.emotiv.controllers.FragmentStatus;
-import com.emotiv.controllers.FragmentTreino;
+import com.emotiv.controllers.FragmentTrain;
 
 public class TabsAdapter extends FragmentStatePagerAdapter {
 
@@ -30,7 +30,7 @@ public class TabsAdapter extends FragmentStatePagerAdapter {
                 fragment = new FragmentStatus();
                 break;
             case 1:
-                fragment = new FragmentTreino();
+                fragment = new FragmentTrain();
                 break;
             default:
                 fragment = new FragmentGame();

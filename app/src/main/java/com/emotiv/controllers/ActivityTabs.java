@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -22,23 +21,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.emotiv.adapters.TabsAdapter;
+import com.emotiv.dao.EngineConfig;
 import com.emotiv.dao.EngineConnector;
+import com.emotiv.interfaces.EngineConfigInterface;
 import com.emotiv.util.Util;
 
-public class ActivityTabs extends AppCompatActivity {
+public class ActivityTabs extends AppCompatActivity implements EngineConfigInterface{
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH = 0;
     private BluetoothAdapter mBluetoothAdapter;
 
     private EngineConnector engineConnector;
+    private EngineConfig engineConfig;
 
     private Toolbar toolbar;
 
@@ -97,12 +99,17 @@ public class ActivityTabs extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             Toast.makeText(this, "Você deve ligar o Bluetooth e a Localização para conectar com Emotiv", Toast.LENGTH_SHORT).show();
         }else {
-            /**
+            /*
              * EngineConnector é a classe que controla
-             * e se comunica com o Emotiv.
+             * e se comunica com o Emotiv. Iniciando conexão.
              */
             engineConnector = EngineConnector.shareInstance(this);
             Log.d(Util.TAG, "EngineConnector");
+            /*
+             * EngineConfig é a classe responsável por
+             * verificar alterações globais do Emotiv.
+             */
+//            engineConfig = EngineConfig.shareInstance(this);
 
             TabsAdapter adapter = new TabsAdapter( getSupportFragmentManager(), this);
 
@@ -140,32 +147,7 @@ public class ActivityTabs extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return false;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        return false;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return false;
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
-            Fragment f = getSupportFragmentManager().findFragmentById(R.id.viewPagerTabs);
-            if (f instanceof FragmentTreino) {
-                ((FragmentTreino) f).onWindowFocusChanged(hasFocus);
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_BLUETOOTH: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -177,6 +159,24 @@ public class ActivityTabs extends AppCompatActivity {
                 break;
             }
         }
+    }
+
+    @Override
+    public void userAdd(int userId) {
+        Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Emotiv conectado.",
+                Snackbar.LENGTH_LONG);
+        TextView textView = (TextView) mySnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(Color.WHITE);
+        mySnackbar.show();
+    }
+
+    @Override
+    public void userRemoved() {
+        Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Emotiv desconectado.",
+                Snackbar.LENGTH_LONG);
+        TextView textView = (TextView) mySnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(Color.WHITE);
+        mySnackbar.show();
     }
     
 

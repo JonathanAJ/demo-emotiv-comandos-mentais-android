@@ -11,6 +11,24 @@ public class Util {
 
     public static final String TAG = "DebugEmotiv";
 
+    /* Config */
+    public static final int TYPE_USER_ADD = 16;
+    public static final int TYPE_USER_REMOVE = 32;
+    public static final int TYPE_EMOSTATE_UPDATE = 64;
+    public static final int TYPE_METACOMMAND_EVENT = 256;
+
+    /* Train */
+    public static final int HANDLER_TRAIN_STARTED = 1;
+    public static final int HANDLER_TRAIN_SUCCEED = 2;
+    public static final int HANDLER_TRAIN_FAILED = 3;
+    public static final int HANDLER_TRAIN_COMPLETED = 4;
+    public static final int HANDLER_TRAIN_ERASED = 5;
+    public static final int HANDLER_TRAIN_REJECTED = 6;
+    public static final int HANDLER_ACTION_CURRENT = 7;
+    public static final int HANDLER_USER_ADD = 8;
+    public static final int HANDLER_USER_REMOVE = 9;
+    public static final int HANDLER_TRAINED_RESET = 10;
+
     /**
      * Toolbar com o titulo da aplicacao
      * @param app activity
