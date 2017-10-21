@@ -109,7 +109,7 @@ public class ActivityTabs extends AppCompatActivity implements EngineConfigInter
              * EngineConfig é a classe responsável por
              * verificar alterações globais do Emotiv.
              */
-//            engineConfig = EngineConfig.shareInstance(this);
+            engineConfig = EngineConfig.shareInstance(this);
 
             TabsAdapter adapter = new TabsAdapter( getSupportFragmentManager(), this);
 
@@ -117,21 +117,42 @@ public class ActivityTabs extends AppCompatActivity implements EngineConfigInter
             mViewPager.setAdapter( adapter );
 
             bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
-            bottomNavigationView.setSelectedItemId(R.id.navigation_status);
             bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                     int id = item.getItemId();
                     if (id == getMenuBottomNavigation()[0]){
+                        Log.d(Util.TAG, "1");
                         mViewPager.setCurrentItem(0);
                     }else if (id == getMenuBottomNavigation()[1]){
+                        Log.d(Util.TAG, "2");
                         mViewPager.setCurrentItem(1);
                     }else if (id == getMenuBottomNavigation()[2]){
+                        Log.d(Util.TAG, "3");
                         mViewPager.setCurrentItem(2);
+                    }
+
+                    Fragment page = getSupportFragmentManager()
+                            .findFragmentByTag("android:switcher:" +
+                                    R.id.viewPagerTabs + ":" +
+                                    mViewPager.getCurrentItem());
+                    Log.d(Util.TAG, "page "+mViewPager.getCurrentItem());
+                    // based on the current position you can then cast the page to the correct Fragment class and call some method inside that fragment to reload the data:
+                    if (page != null) {
+                        if (page instanceof FragmentStatus){
+                            Log.d(Util.TAG, "status");
+                        }else if (page instanceof FragmentTrain){
+                            Log.d(Util.TAG, "train");
+                        }else if (page instanceof FragmentGame){
+                            Log.d(Util.TAG, "game");
+                        }
+                    }else{
+                        Log.d(Util.TAG, "page null");
                     }
                     return true;
                 }
             });
+            bottomNavigationView.setSelectedItemId(R.id.navigation_status);
 
             mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
