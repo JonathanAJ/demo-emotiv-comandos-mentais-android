@@ -4,9 +4,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.emotiv.util.Util;
 
 public class FragmentGame extends Fragment {
 
@@ -21,5 +24,17 @@ public class FragmentGame extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(Util.TAG, "Game OnPause");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(Util.TAG, "Game OnResume");
     }
 }

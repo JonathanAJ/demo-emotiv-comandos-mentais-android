@@ -21,19 +21,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.emotiv.adapters.TabsAdapter;
 import com.emotiv.dao.EngineConfig;
 import com.emotiv.dao.EngineConnector;
 import com.emotiv.interfaces.EngineConfigInterface;
 import com.emotiv.util.Util;
 
-public class ActivityTabs extends AppCompatActivity implements EngineConfigInterface{
+public class ActivityMain extends AppCompatActivity implements EngineConfigInterface{
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH = 0;
@@ -47,17 +44,9 @@ public class ActivityTabs extends AppCompatActivity implements EngineConfigInter
     private BottomNavigationView bottomNavigationView;
     private CoordinatorLayout coordinatorLayout;
 
-    private ViewPager mViewPager;
-
-    private int[] menuBottomNavigation = {
-            R.id.navigation_status,
-            R.id.navigation_treino,
-            R.id.navigation_jogo
-    };
-
-    public int[] getMenuBottomNavigation(){
-        return this.menuBottomNavigation;
-    }
+    private Fragment fragmentStatus;
+    private Fragment fragmentTrain;
+    private Fragment fragmentGame;
 
     public EngineConnector getEngineConnector() {
         return engineConnector;
@@ -66,7 +55,7 @@ public class ActivityTabs extends AppCompatActivity implements EngineConfigInter
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_tabs);
+        setContentView(R.layout.activity_main);
 
         toolbar = Util.initToolbar(this, false, "Comando Mental");
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
@@ -111,60 +100,36 @@ public class ActivityTabs extends AppCompatActivity implements EngineConfigInter
              */
             engineConfig = EngineConfig.shareInstance(this);
 
-            TabsAdapter adapter = new TabsAdapter( getSupportFragmentManager(), this);
-
-            mViewPager = (ViewPager) findViewById(R.id.viewPagerTabs);
-            mViewPager.setAdapter( adapter );
+            fragmentStatus = new FragmentStatus();
+            fragmentTrain = new FragmentTrain();
+            fragmentGame = new FragmentGame();
 
             bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
             bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                    int id = item.getItemId();
-                    if (id == getMenuBottomNavigation()[0]){
-                        Log.d(Util.TAG, "1");
-                        mViewPager.setCurrentItem(0);
-                    }else if (id == getMenuBottomNavigation()[1]){
-                        Log.d(Util.TAG, "2");
-                        mViewPager.setCurrentItem(1);
-                    }else if (id == getMenuBottomNavigation()[2]){
-                        Log.d(Util.TAG, "3");
-                        mViewPager.setCurrentItem(2);
-                    }
 
-                    Fragment page = getSupportFragmentManager()
-                            .findFragmentByTag("android:switcher:" +
-                                    R.id.viewPagerTabs + ":" +
-                                    mViewPager.getCurrentItem());
-                    Log.d(Util.TAG, "page "+mViewPager.getCurrentItem());
-                    // based on the current position you can then cast the page to the correct Fragment class and call some method inside that fragment to reload the data:
-                    if (page != null) {
-                        if (page instanceof FragmentStatus){
-                            Log.d(Util.TAG, "status");
-                        }else if (page instanceof FragmentTrain){
-                            Log.d(Util.TAG, "train");
-                        }else if (page instanceof FragmentGame){
-                            Log.d(Util.TAG, "game");
-                        }
-                    }else{
-                        Log.d(Util.TAG, "page null");
+                    int id = item.getItemId();
+
+                    if (id == R.id.navigation_status){
+                        initFragments(fragmentStatus, "status");
+                    }else if (id == R.id.navigation_treino){
+                        initFragments(fragmentTrain, "train");
+                    }else if (id == R.id.navigation_jogo){
+                        initFragments(fragmentGame, "game");
                     }
                     return true;
                 }
             });
             bottomNavigationView.setSelectedItemId(R.id.navigation_status);
-
-            mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageSelected(int position) {
-                    bottomNavigationView.setSelectedItemId(getMenuBottomNavigation()[position]);
-                }
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
-                @Override
-                public void onPageScrollStateChanged(int state) {}
-            });
         }
+    }
+
+    private void initFragments(Fragment fragment, String tag){
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.viewFragment, fragment, tag)
+                .commit();
     }
 
     @Override

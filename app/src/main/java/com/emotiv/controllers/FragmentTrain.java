@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.emotiv.dao.EngineTrain;
 import com.emotiv.interfaces.EngineTrainInterface;
 import com.emotiv.insight.IEmoStateDLL;
 import com.emotiv.insight.MentalCommandDetection;
+import com.emotiv.util.Util;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -41,7 +43,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     private ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
     private int indexSpinnerAction, _currentAction, userId = 0, count = 0;
 
-    private ActivityTabs activityContext;
+    private ActivityMain activityContext;
     private EngineTrain engineTrain;
 
     private Timer timer;
@@ -58,7 +60,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        activityContext = (ActivityTabs) getActivity();
+        activityContext = (ActivityMain) getActivity();
         rootView = inflater.inflate(R.layout.fragment_treino, container, false);
         return rootView;
     }
@@ -435,5 +437,17 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         spinAdapter = new AdapterSpinner(activityContext, R.layout.row, model);
         spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerAction.setAdapter(spinAdapter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(Util.TAG, "Train OnPause");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(Util.TAG, "Train OnResume");
     }
 }
