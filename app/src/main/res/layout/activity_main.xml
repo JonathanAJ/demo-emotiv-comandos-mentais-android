@@ -2,7 +2,6 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:background="@color/corBranca"
     android:layout_width="match_parent"
@@ -63,7 +62,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
-            app:itemBackground="@color/primary"
+            android:background="@android:color/white"
             app:itemIconTint="@drawable/select_color_bottom_nav"
             app:itemTextColor="@drawable/select_color_bottom_nav"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -18,9 +18,14 @@ android {
     }
 }
 
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
+
 dependencies {
     compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.emotiv.sdk:community:3.3.4'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:support-v13:25.3.1'
@@ -28,7 +33,13 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support:design:25.3.1'
 
+    //emotiv sdk
+    compile 'com.emotiv.sdk:community:3.3.4'
+
     //libs animaçoes
     compile 'com.daimajia.easing:library:1.0.1@aar'
     compile 'com.daimajia.androidanimations:library:1.1.3@aar'
+
+    //lib progress
+    compile 'com.github.lzyzsd:circleprogress:1.2.1'
 }

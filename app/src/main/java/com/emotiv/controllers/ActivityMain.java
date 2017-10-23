@@ -79,6 +79,29 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
         else {
             checkConnect();
         }
+
+        fragmentStatus = new FragmentStatus();
+        fragmentTrain = new FragmentTrain();
+        fragmentGame = new FragmentGame();
+
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+                int id = item.getItemId();
+
+                if (id == R.id.navigation_status){
+                    initFragments(fragmentStatus, "status");
+                }else if (id == R.id.navigation_treino){
+                    initFragments(fragmentTrain, "train");
+                }else if (id == R.id.navigation_jogo){
+                    initFragments(fragmentGame, "game");
+                }
+                return true;
+            }
+        });
+        bottomNavigationView.setSelectedItemId(R.id.navigation_status);
     }
 
     private void checkConnect(){
@@ -99,29 +122,6 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
              * verificar alterações globais do Emotiv.
              */
             engineConfig = EngineConfig.shareInstance(this);
-
-            fragmentStatus = new FragmentStatus();
-            fragmentTrain = new FragmentTrain();
-            fragmentGame = new FragmentGame();
-
-            bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
-            bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-                    int id = item.getItemId();
-
-                    if (id == R.id.navigation_status){
-                        initFragments(fragmentStatus, "status");
-                    }else if (id == R.id.navigation_treino){
-                        initFragments(fragmentTrain, "train");
-                    }else if (id == R.id.navigation_jogo){
-                        initFragments(fragmentGame, "game");
-                    }
-                    return true;
-                }
-            });
-            bottomNavigationView.setSelectedItemId(R.id.navigation_status);
         }
     }
 
