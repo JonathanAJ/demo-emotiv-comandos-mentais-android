@@ -1,4 +1,4 @@
-package com.emotiv.interfaces;
+package com.projeto.interfaces;
 
 public interface EngineTrainInterface {
 	//train

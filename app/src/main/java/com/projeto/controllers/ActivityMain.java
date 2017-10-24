@@ -1,4 +1,4 @@
-package com.emotiv.controllers;
+package com.projeto.controllers;
 
 import android.Manifest;
 import android.app.Activity;
@@ -16,7 +16,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -25,10 +24,10 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.emotiv.dao.EngineConfig;
-import com.emotiv.dao.EngineConnector;
-import com.emotiv.interfaces.EngineConfigInterface;
-import com.emotiv.util.Util;
+import com.projeto.dao.EngineConfig;
+import com.projeto.dao.EngineConnector;
+import com.projeto.interfaces.EngineConfigInterface;
+import com.projeto.util.Util;
 
 public class ActivityMain extends AppCompatActivity implements EngineConfigInterface{
 

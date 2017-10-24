@@ -1,4 +1,4 @@
-package com.emotiv.controllers;
+package com.projeto.controllers;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -21,13 +21,13 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.emotiv.adapters.AdapterSpinner;
-import com.emotiv.adapters.DataSpinner;
-import com.emotiv.dao.EngineTrain;
-import com.emotiv.interfaces.EngineTrainInterface;
+import com.projeto.adapters.AdapterSpinner;
+import com.projeto.adapters.DataSpinner;
+import com.projeto.dao.EngineTrain;
+import com.projeto.interfaces.EngineTrainInterface;
 import com.emotiv.insight.IEmoStateDLL;
 import com.emotiv.insight.MentalCommandDetection;
-import com.emotiv.util.Util;
+import com.projeto.util.Util;
 
 import java.util.ArrayList;
 import java.util.Timer;

@@ -1,12 +1,12 @@
-package com.emotiv.adapters;
+package com.projeto.adapters;
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatSpinner;
 import android.util.AttributeSet;
-import android.widget.Spinner;
 
 
 /** Spinner extension that calls onItemSelected even when the selection is the same as its previous value */
-public class CustomSpinner extends Spinner {
+public class CustomSpinner extends AppCompatSpinner {
 
   public CustomSpinner(Context context)
   { super(context); }

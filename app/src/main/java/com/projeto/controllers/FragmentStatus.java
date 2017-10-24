@@ -1,4 +1,4 @@
-package com.emotiv.controllers;
+package com.projeto.controllers;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.emotiv.util.Util;
+import com.projeto.util.Util;
 
 public class FragmentStatus extends Fragment {
 

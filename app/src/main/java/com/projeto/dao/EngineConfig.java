@@ -1,4 +1,4 @@
-package com.emotiv.dao;
+package com.projeto.dao;
 
 import android.os.Handler;
 import android.os.Message;
@@ -7,8 +7,8 @@ import android.util.Log;
 import com.emotiv.insight.IEdk;
 import com.emotiv.insight.IEdkErrorCode;
 import com.emotiv.insight.IEmoStateDLL;
-import com.emotiv.interfaces.EngineConfigInterface;
-import com.emotiv.util.Util;
+import com.projeto.interfaces.EngineConfigInterface;
+import com.projeto.util.Util;
 
 import java.util.Timer;
 import java.util.TimerTask;

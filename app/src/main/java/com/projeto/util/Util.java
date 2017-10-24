@@ -1,11 +1,11 @@
-package com.emotiv.util;
+package com.projeto.util;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import com.emotiv.controllers.R;
+import com.projeto.controllers.R;
 
 public class Util {
 

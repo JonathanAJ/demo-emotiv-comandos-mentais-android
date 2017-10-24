@@ -1,8 +1,6 @@
-package com.emotiv.adapters;
+package com.projeto.adapters;
 
 import java.util.ArrayList;
-
-import com.emotiv.controllers.R;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.projeto.controllers.R;
 
 
 public class AdapterSpinner extends ArrayAdapter<DataSpinner> {
