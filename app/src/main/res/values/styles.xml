@@ -1,67 +1,40 @@
 <resources>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:textColor">@color/primary_text</item>
         <item name="android:textColorHint">@color/corCinzaClaroHint</item>
-        <item name="android:textColorSecondary">@color/secondary_text</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
     </style>
 
-    <style name="MySwitch" parent="Theme.AppCompat.Light">
-        <!-- active thumb & track color (30% transparency) -->
-        <item name="colorControlActivated">@color/corLaranjaLine</item>
-        <!-- inactive thumb color -->
-        <item name="colorSwitchThumbNormal">@color/corCinzaClaro</item>
-        <!-- inactive track color (30% transparency) -->
-        <item name="android:colorForeground">@color/corCinzaClaroHint</item>
+    <style name="ThemeInput">
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:textColor">@color/primary_text</item>
+        <item name="android:textColorHint">@color/corCinzaClaroHint</item>
+        <item name="android:textColorSecondary">@color/corCinzaClaroHint</item>
     </style>
 
-    <style name="textLine">
-        <item name="android:background">@drawable/text_line</item>
-        <item name="android:textSize">@dimen/texto_tamanho</item>
-        <item name="android:paddingLeft">26dp</item>
-        <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
-        <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:textColor">@color/corCinzaEscuro</item>
+    <style name="PrimaryButton">
+        <item name="colorButtonNormal">@color/primary</item>
+        <item name="colorControlHighlight">@color/primary_light</item>
+        <item name="android:textColor">@color/corBranca</item>
     </style>
 
-    <style name="editStyle">
-        <item name="android:background">@drawable/edit_text</item>
-        <item name="android:textSize">@dimen/texto_tamanho</item>
-        <item name="android:layout_marginTop">12dp</item>
-        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
-        <item name="android:paddingLeft">18dp</item>
-        <item name="android:paddingRight">16dp</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="android:textColor">@color/corCinzaEscuro</item>
+    <style name="SecondaryButton">
+        <item name="colorButtonNormal">@color/accent</item>
+        <item name="colorControlHighlight">@color/primary_light</item>
+        <item name="android:textColor">@color/corBranca</item>
     </style>
 
-    <style name="editStyleDisable">
-        <item name="android:background">@drawable/edit_text_disable</item>
-        <item name="android:textSize">@dimen/texto_tamanho</item>
-        <item name="android:layout_marginTop">12dp</item>
-        <item name="android:layout_marginBottom">16dp</item>
-        <item name="android:paddingLeft">18dp</item>
-        <item name="android:paddingRight">16dp</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="android:textColor">@color/corCinzaEscuro</item>
+    <style name="PrimaryFlatButton">
+        <item name="android:buttonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="android:textColor">@color/primary</item>
     </style>
 
-    <style name="textStyle">
-        <item name="android:textSize">@dimen/texto_tamanho</item>
-        <item name="android:textColor">@color/corCinzaEscuro</item>
+    <style name="SecondaryFlatButton">
+        <item name="android:buttonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="android:textColor">@color/accent</item>
     </style>
-
-    <style name="textStyleHint">
-        <item name="android:textSize">@dimen/texto_tamanho</item>
-        <item name="android:textStyle">italic</item>
-        <item name="android:textColor">@color/corCinzaEscuro</item>
-    </style>
-
 </resources>

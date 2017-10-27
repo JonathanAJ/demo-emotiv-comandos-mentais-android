@@ -9,8 +9,10 @@ import com.emotiv.insight.IEdkErrorCode;
 import com.emotiv.insight.IEmoStateDLL;
 import com.emotiv.insight.MentalCommandDetection;
 import com.projeto.interfaces.EngineTrainInterface;
+import com.projeto.util.Emotiv;
 import com.projeto.util.Util;
 
+import java.sql.Time;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -35,9 +37,7 @@ public class EngineTrain {
     public static final int HANDLER_TRAINED_RESET = 10;
 
     private EngineTrainInterface delegate;
-    private boolean isConnected = false;
     private TimerTask timerTask;
-    private int userId = -1;
     private int state;
     private static EngineTrain engineInstance = null;
 
@@ -49,121 +49,124 @@ public class EngineTrain {
     }
 
     private EngineTrain(EngineTrainInterface delegate){
-        timerTask();
-        Timer timer = new Timer();
-        // Roda um TimerTask com delay inicial 0 a cada 10 milissegundos
-        timer.schedule(timerTask, 0, 10);
         this.delegate = delegate;
         Log.d(Util.TAG, "EngineTrain");
     }
 
-    private void timerTask() {
-        // Inicializa TimerTask rodando a cada 10 milissegundos
-        if (timerTask == null) {
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
+    public void createTimerTask(){
+        // Roda um TimerTask com delay inicial 0 a cada 10 milissegundos
+        Timer timer = new Timer();
+        timer.schedule(initTimerTask(), 0, 10);
+    }
 
-					/*Conexão com Epoc Plus*/
-                    int numberDevice = IEdk.IEE_GetEpocPlusDeviceCount();
-                    if (numberDevice != 0) {
-                        Log.d(Util.TAG, "Conectando-se...");
-                        if (!isConnected) {
-                            // Conecta Epoc+, posicao 0 na lista, modo de configuração falso
-                            IEdk.IEE_ConnectEpocPlusDevice(0, false);
-                        }
-                    }
-                    // Recupera o pŕoximo evento de EmoEngine
-                    // Retorna OK, ERROR ou NO EVENT
-                    state = IEdk.IEE_EngineGetNextEvent();
+    public void stopTimertask(){
+        timerTask.cancel();
+    }
 
-                    if (state == IEdkErrorCode.EDK_OK.ToInt()) {
-						/*
-						 * Verifica a qualidade do sinal
-						 */
-                        int values[] = IEmoStateDLL.IS_GetContactQualityFromAllChannels();
-                        int numGood = 0;
-                        for (int value: values) {
-                            if (value == IEmoStateDLL.IEE_EEG_ContactQuality_t.IEEG_CQ_GOOD.ordinal())
-                                numGood++;
-                        }
-                        // calcula a porcentagem da qualidade boa de sinal
-                        double resNumGood = ((double) numGood / (double) values.length) * 100.0;
-                        Log.d(Util.TAG, "Qualidade: " + resNumGood + "%");
-
-                        int typeEvent = IEdk.IEE_EmoEngineEventGetType();
-                        switch (typeEvent) {
-                            //Um Emotiv está conectado.
-                            case TYPE_USER_ADD:
-                                Log.d(Util.TAG, "Emotiv Conectado");
-                                isConnected = true;
-                                // Retorna o ID do usuário nos eventos IEE_UserAdded e IEE_UserRemoved.
-                                userId = IEdk.IEE_EmoEngineEventGetUserId();
-                                handler.sendEmptyMessage(HANDLER_USER_ADD);
-                                break;
-                            //Um Emotiv está desconectado.
-                            case TYPE_USER_REMOVE:
-                                Log.d(Util.TAG, "Emotiv Desconectado");
-                                isConnected = false;
-                                userId = -1;
-                                handler.sendEmptyMessage(HANDLER_USER_REMOVE);
-                                break;
-                            // Os resultados de detecção foram atualizados da EmoEngine.
-                            case TYPE_EMOSTATE_UPDATE:
-                                if (!isConnected)
-                                    break;
-                                // Retorna um EmoState na memória
-                                IEdk.IEE_EmoEngineEventGetEmoState();
-                                handler.sendMessage(handler.obtainMessage(HANDLER_ACTION_CURRENT));
-                                break;
-
-                            case TYPE_METACOMMAND_EVENT:
-                                int type = MentalCommandDetection.IEE_MentalCommandEventGetType();
-
-                                if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingStarted
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training started");
-                                    handler.sendEmptyMessage(HANDLER_TRAIN_STARTED);
-
-                                } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingSucceeded
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training Succeeded");
-                                    handler.sendEmptyMessage(HANDLER_TRAIN_SUCCEED);
-
-                                } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingCompleted
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training Completed");
-                                    handler.sendEmptyMessage(HANDLER_TRAIN_COMPLETED);
-
-                                } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingDataErased
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training erased");
-                                    handler.sendEmptyMessage(HANDLER_TRAIN_ERASED);
-
-                                } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingFailed
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training failed");
-                                    handler.sendEmptyMessage(HANDLER_TRAIN_FAILED);
-
-                                } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingRejected
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training rejected");
-                                    handler.sendEmptyMessage(HANDLER_TRAIN_REJECTED);
-
-                                } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingReset
-                                        .getType()) {
-                                    Log.d(Util.TAG, "MentalCommand training Reset");
-                                    handler.sendEmptyMessage(HANDLER_TRAINED_RESET);
-
-                                }
-                                break;
-                            default:
-                                break;
-                        }
+    private TimerTask initTimerTask() {
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                /*Conexão com Epoc Plus*/
+                int numberDevice = IEdk.IEE_GetEpocPlusDeviceCount();
+                if (numberDevice != 0) {
+                    Log.d(Util.TAG, "Conectando-se...");
+                    if (!Emotiv.isConnected()) {
+                        // Conecta Epoc+, posicao 0 na lista, modo de configuração falso
+                        IEdk.IEE_ConnectEpocPlusDevice(0, false);
                     }
                 }
-            };
-        }
+                // Recupera o pŕoximo evento de EmoEngine
+                // Retorna OK, ERROR ou NO EVENT
+                state = IEdk.IEE_EngineGetNextEvent();
+
+                if (state == IEdkErrorCode.EDK_OK.ToInt()) {
+                    /*
+                     * Verifica a qualidade do sinal
+                     */
+                    int values[] = IEmoStateDLL.IS_GetContactQualityFromAllChannels();
+                    int numGood = 0;
+                    for (int value: values) {
+                        if (value == IEmoStateDLL.IEE_EEG_ContactQuality_t.IEEG_CQ_GOOD.ordinal())
+                            numGood++;
+                    }
+                    // calcula a porcentagem da qualidade boa de sinal
+                    double resNumGood = ((double) numGood / (double) values.length) * 100.0;
+                    Log.d(Util.TAG, "Qualidade: " + resNumGood + "%");
+
+                    int typeEvent = IEdk.IEE_EmoEngineEventGetType();
+                    switch (typeEvent) {
+                        //Um Emotiv está conectado.
+                        case TYPE_USER_ADD:
+                            Log.d(Util.TAG, "Emotiv Conectado");
+                            Emotiv.setConnected(true);
+                            // Retorna o ID do usuário nos eventos IEE_UserAdded e IEE_UserRemoved.
+                            Emotiv.setUserID(IEdk.IEE_EmoEngineEventGetUserId());
+                            handler.sendEmptyMessage(HANDLER_USER_ADD);
+                            break;
+                        //Um Emotiv está desconectado.
+                        case TYPE_USER_REMOVE:
+                            Log.d(Util.TAG, "Emotiv Desconectado");
+                            Emotiv.setConnected(false);
+                            Emotiv.clearUserID();
+                            handler.sendEmptyMessage(HANDLER_USER_REMOVE);
+                            break;
+                        // Os resultados de detecção foram atualizados da EmoEngine.
+                        case TYPE_EMOSTATE_UPDATE:
+                            if (!Emotiv.isConnected())
+                                break;
+                            // Retorna um EmoState na memória
+                            IEdk.IEE_EmoEngineEventGetEmoState();
+                            handler.sendMessage(handler.obtainMessage(HANDLER_ACTION_CURRENT));
+                            break;
+
+                        case TYPE_METACOMMAND_EVENT:
+                            int type = MentalCommandDetection.IEE_MentalCommandEventGetType();
+
+                            if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingStarted
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training started");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_STARTED);
+
+                            } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingSucceeded
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training Succeeded");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_SUCCEED);
+
+                            } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingCompleted
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training Completed");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_COMPLETED);
+
+                            } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingDataErased
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training erased");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_ERASED);
+
+                            } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingFailed
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training failed");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_FAILED);
+
+                            } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingRejected
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training rejected");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_REJECTED);
+
+                            } else if (type == MentalCommandDetection.IEE_MentalCommandEvent_t.IEE_MentalCommandTrainingReset
+                                    .getType()) {
+                                Log.d(Util.TAG, "MentalCommand training Reset");
+                                handler.sendEmptyMessage(HANDLER_TRAINED_RESET);
+
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        };
+        return timerTask;
     }
 
     private Handler handler = new Handler() {
@@ -172,7 +175,7 @@ public class EngineTrain {
             switch (msg.what) {
                 case HANDLER_USER_ADD:
                     if (delegate != null)
-                        delegate.userAdd(userId);
+                        delegate.userAdd(Emotiv.getUserID());
                     break;
                 case HANDLER_USER_REMOVE:
                     if (delegate != null)
@@ -219,25 +222,21 @@ public class EngineTrain {
         }
     };
 
-    public boolean isConnected() {
-        return isConnected;
-    }
-
     public void enableMentalcommandActions(IEmoStateDLL.IEE_MentalCommandAction_t _MentalcommandAction) {
         long MentaCommandActions;
-        long[] activeAction = MentalCommandDetection.IEE_MentalCommandGetActiveActions(userId);
+        long[] activeAction = MentalCommandDetection.IEE_MentalCommandGetActiveActions(Emotiv.getUserID());
         if (activeAction[0] == IEdkErrorCode.EDK_OK.ToInt()) {
             long y = activeAction[1] & (long) _MentalcommandAction.ToInt(); // and
             if (y == 0) {
                 MentaCommandActions = activeAction[1]| ((long) _MentalcommandAction.ToInt()); // or
-                MentalCommandDetection.IEE_MentalCommandSetActiveActions(userId, MentaCommandActions);
+                MentalCommandDetection.IEE_MentalCommandSetActiveActions(Emotiv.getUserID(), MentaCommandActions);
             }
         }
     }
 
     public boolean checkTrained(int action) {
         // Verifica se o comando já foi treinado
-        long[] result = MentalCommandDetection.IEE_MentalCommandGetTrainedSignatureActions(userId);
+        long[] result = MentalCommandDetection.IEE_MentalCommandGetTrainedSignatureActions(Emotiv.getUserID());
         if (result[0] == IEdkErrorCode.EDK_OK.ToInt()) {
             long y = result[1] & action;
             return (y == action);
@@ -247,9 +246,9 @@ public class EngineTrain {
 
     public void trainningClear(IEmoStateDLL.IEE_MentalCommandAction_t MentalcommandAction) {
         // primeiramente seta qual comando você está "treinando"
-        MentalCommandDetection.IEE_MentalCommandSetTrainingAction(userId, MentalcommandAction.ToInt());
+        MentalCommandDetection.IEE_MentalCommandSetTrainingAction(Emotiv.getUserID(), MentalcommandAction.ToInt());
         // depois apaga esse comando e verifica se deu tudo certo
-        if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(userId,
+        if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(Emotiv.getUserID(),
                 MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_ERASE.getType()) == IEdkErrorCode.EDK_OK.ToInt()) {
             Log.d(Util.TAG, "clear " + MentalcommandAction.name() + " sucesso");
         }else{
@@ -259,9 +258,9 @@ public class EngineTrain {
 
     public boolean startTrainingMentalcommand(Boolean isTrain, IEmoStateDLL.IEE_MentalCommandAction_t MentalCommandAction) {
         if (!isTrain) {
-            if (MentalCommandDetection.IEE_MentalCommandSetTrainingAction(userId,
+            if (MentalCommandDetection.IEE_MentalCommandSetTrainingAction(Emotiv.getUserID(),
                     MentalCommandAction.ToInt()) == IEdkErrorCode.EDK_OK.ToInt()) {
-                if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(userId,
+                if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(Emotiv.getUserID(),
                         MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_START.getType()) == IEdkErrorCode.EDK_OK
                         .ToInt()) {
                     Log.d(Util.TAG, "treino de " + MentalCommandAction.name() + " sucesso");
@@ -269,7 +268,7 @@ public class EngineTrain {
                 }
             }
         } else {
-            if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(userId,
+            if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(Emotiv.getUserID(),
                     MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_RESET.getType()) == IEdkErrorCode.EDK_OK
                     .ToInt()) {
                 return false;
@@ -279,7 +278,7 @@ public class EngineTrain {
     }
 
     public void setTrainControl(int type) {
-        if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(userId, type) == IEdkErrorCode.EDK_OK
+        if (MentalCommandDetection.IEE_MentalCommandSetTrainingControl(Emotiv.getUserID(), type) == IEdkErrorCode.EDK_OK
                 .ToInt()) {
         }
     }

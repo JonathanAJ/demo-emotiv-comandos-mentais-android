@@ -27,6 +27,7 @@ import com.projeto.dao.EngineTrain;
 import com.projeto.interfaces.EngineTrainInterface;
 import com.emotiv.insight.IEmoStateDLL;
 import com.emotiv.insight.MentalCommandDetection;
+import com.projeto.util.Emotiv;
 import com.projeto.util.Util;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     private AdapterSpinner spinAdapter;
     private ImageView imgBox;
     private ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
-    private int indexSpinnerAction, _currentAction, userId = 0, count = 0;
+    private int indexSpinnerAction, _currentAction, count = 0;
 
     private ActivityMain activityContext;
     private EngineTrain engineTrain;
@@ -72,10 +73,24 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         init();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        engineTrain.createTimerTask();
+        Log.d(Util.TAG, "Train OnResume - TimerInit");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        engineTrain.stopTimertask();
+        Log.d(Util.TAG, "Train OnPause - Timer Cancel");
+    }
+
     public void init() {
-        spinnerAction =(Spinner) rootView.findViewById(R.id.spinnerAction);
-        btnTrain=(Button) rootView.findViewById(R.id.btstartTraing);
-        btnClear=(Button) rootView.findViewById(R.id.btClearData);
+        spinnerAction = (Spinner) rootView.findViewById(R.id.spinnerAction);
+        btnTrain = (Button) rootView.findViewById(R.id.btstartTraing);
+        btnClear = (Button) rootView.findViewById(R.id.btClearData);
         btnClear.setOnClickListener(new View.OnClickListener() {
             /**
              * indexSpinnerAction é o parâmetro que diz em qual
@@ -136,12 +151,13 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
             public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
+
         btnTrain.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                if(!engineTrain.isConnected()) {
-                    Toast.makeText(activityContext, "Você precisa conectar seu Emotiv", Toast.LENGTH_SHORT).show();
+                if(!Emotiv.isConnected()) {
+                    Toast.makeText(activityContext, getString(R.string.connect_emotiv), Toast.LENGTH_SHORT).show();
                 }
                 else{
                     switch (indexSpinnerAction) {
@@ -190,7 +206,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
             switch (msg.what) {
                 case 0:
                     count ++;
-                    int trainningTime = (int) MentalCommandDetection.IEE_MentalCommandGetTrainingTime(userId)[1]/1000;
+                    int trainningTime = (int) MentalCommandDetection.IEE_MentalCommandGetTrainingTime(Emotiv.getUserID())[1]/1000;
                     if(trainningTime > 0)
                         progressBarTime.setProgress(count / trainningTime);
                     if (progressBarTime.getProgress() >= 100) {
@@ -209,7 +225,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
     public void startTrainingMentalcommand(IEmoStateDLL.IEE_MentalCommandAction_t MentalCommandAction) {
         isTrainning = engineTrain.startTrainingMentalcommand(isTrainning, MentalCommandAction);
-        btnTrain.setText((isTrainning) ? "Abortar treino" : "Treinar");
+        btnTrain.setText((isTrainning) ? getString(R.string.abort) : getString(R.string.train));
     }
 
 
@@ -263,15 +279,15 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     }
 
     @Override
-    public void userAdd(int userId) {
-        this.userId = userId;
-    }
-
-    @Override
     public void currentAction(int typeAction, float power) {
         progressPower.setProgress((int)(power * 100));
         _currentAction = typeAction;
         _currentPower  = power;
+    }
+
+    @Override
+    public void userAdd(int userId) {
+
     }
 
     @Override
@@ -292,14 +308,14 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     @Override
     public void trainSucceed() {
         progressBarTime.setVisibility(View.INVISIBLE);
-        btnTrain.setText("Treinar");
+        btnTrain.setText(getString(R.string.train));
         enableClick();
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityContext);
         // set title
-        alertDialogBuilder.setTitle("Sucesso");
+        alertDialogBuilder.setTitle(getString(R.string.success));
         // set dialog message
         alertDialogBuilder
-                .setMessage("Treinamento com sucesso. Você aceita este treinamento?")
+                .setMessage(getString(R.string.msgTrainSuccess))
                 .setCancelable(false)
                 .setIcon(R.mipmap.ic_launcher)
                 .setPositiveButton("Sim",
@@ -323,14 +339,14 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     @Override
     public  void trainFailed(){
         progressBarTime.setVisibility(View.INVISIBLE);
-        btnTrain.setText("Treinar");
+        btnTrain.setText(getString(R.string.train));
         enableClick();
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityContext);
         // set title
-        alertDialogBuilder.setTitle("Falha");
+        alertDialogBuilder.setTitle(getString(R.string.error));
         // set dialog message
         alertDialogBuilder
-                .setMessage("Sinal com muito ruído. Não foi possível treinar")
+                .setMessage(getString(R.string.msgTrainNoise))
                 .setCancelable(false)
                 .setIcon(R.mipmap.ic_launcher)
                 .setPositiveButton("OK",
@@ -437,17 +453,5 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         spinAdapter = new AdapterSpinner(activityContext, R.layout.row, model);
         spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerAction.setAdapter(spinAdapter);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d(Util.TAG, "Train OnPause");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(Util.TAG, "Train OnResume");
     }
 }
