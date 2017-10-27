@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -91,7 +92,7 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
                 int id = item.getItemId();
 
                 if (id == R.id.navigation_status){
-                    initFragments(fragmentStatus, "status");
+                    initFragments(fragmentStatus, "txtStatus");
                 }else if (id == R.id.navigation_treino){
                     initFragments(fragmentTrain, "train");
                 }else if (id == R.id.navigation_jogo){
@@ -144,6 +145,24 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int idMenu = item.getItemId();
+        switch (idMenu){
+            case R.id.menuLogin : {
+                Util.mudaTela(this, ActivityLogin.class);
+                break;
+            }
+        }
+        return true;
     }
 
     @Override
