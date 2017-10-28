@@ -38,6 +38,7 @@ public class EngineTrain {
 
     private EngineTrainInterface delegate;
     private TimerTask timerTask;
+    private Timer timer;
     private int state;
     private static EngineTrain engineInstance = null;
 
@@ -55,12 +56,15 @@ public class EngineTrain {
 
     public void createTimerTask(){
         // Roda um TimerTask com delay inicial 0 a cada 10 milissegundos
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.schedule(initTimerTask(), 0, 10);
     }
 
     public void stopTimertask(){
         timerTask.cancel();
+        timer.cancel();
+        timerTask = null;
+        timer = null;
     }
 
     private TimerTask initTimerTask() {

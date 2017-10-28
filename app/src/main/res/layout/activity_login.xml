@@ -90,7 +90,7 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="16dp"
         android:layout_marginTop="18dp"
-        android:text="Login"
+        android:text="Login e Load de perfil"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtInputPass"
         android:layout_marginLeft="16dp"
@@ -99,7 +99,7 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/msgSave"
         android:textAlignment="center"
@@ -109,7 +109,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginRight="16dp"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.437" />
+        app:layout_constraintHorizontal_bias="0.406" />
 
     <Button
         android:id="@+id/btSave"

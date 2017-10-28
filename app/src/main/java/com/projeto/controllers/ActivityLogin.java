@@ -1,6 +1,7 @@
 package com.projeto.controllers;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -27,6 +28,8 @@ import java.util.TimerTask;
 public class ActivityLogin extends AppCompatActivity {
 
     private TimerTask timerTask;
+    private Thread threadSave, threadLogin;
+    private Timer timer;
     private boolean cloudConnected                 = false;
     private int engineUserID           			   = 0;
     private int  userCloudID                       = -1;
@@ -34,6 +37,7 @@ public class ActivityLogin extends AppCompatActivity {
     private EditText txtEmotivId, txtPass;
     private TextView txtStatus;
     private final String MY_PROFILE = "my_profile";
+    private ProgressDialog myProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,14 +52,19 @@ public class ActivityLogin extends AppCompatActivity {
         txtStatus = (TextView)findViewById(R.id.txtStatus);
 
         btSave = (Button)findViewById(R.id.btSave);
+        btSave.setEnabled(false);
 
         getCredentials();
         initListeners();
+
+        if(EmotivCloudClient.EC_GetUserDetail() != -1)
+            btSave.setEnabled(true);
 
         if(Emotiv.isConnected())
             txtStatus.setText(getString(R.string.connect_emotiv_success));
         else
             txtStatus.setText(getString(R.string.connect_emotiv));
+
     }
 
     private void initListeners(){
@@ -79,54 +88,105 @@ public class ActivityLogin extends AppCompatActivity {
                     return;
                 }
 
-                saveCredentials(emotivId, password);
-
                 if(Emotiv.isConnected()) {
-                    IEdk.IEE_EngineConnect(ActivityLogin.this,"");
+//                    IEdk.IEE_EngineConnect(ActivityLogin.this,"");
                 }else{
                     txtStatus.setText(getString(R.string.connect_emotiv));
                     return;
-                }
-
-                if(!cloudConnected) {
-                    cloudConnected = (EmotivCloudClient.EC_Connect(ActivityLogin.this) == EmotivCloudErrorCode.EC_OK.ToInt());
-                    if(!cloudConnected) {
-                        txtStatus.setText(getString(R.string.connect_internet));
-                        return;
-                    }
                 }
 
                 // Fecha Teclado
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(btLogin.getWindowToken(), InputMethodManager.RESULT_UNCHANGED_SHOWN);
 
-                if(EmotivCloudClient.EC_Login(emotivId, password) == EmotivCloudErrorCode.EC_OK.ToInt()) {
-                    txtStatus.setText(getString(R.string.msgLoginSuccess));
-                    userCloudID = EmotivCloudClient.EC_GetUserDetail();
-                    if(userCloudID != -1) {
-                        if(!Emotiv.isConnected()) {
-                            txtStatus.setText(getString(R.string.connect_emotiv));
-                            return;
+                showDialog();
+
+                final String EMOTIV_ID = emotivId;
+                final String PASSWORD = password;
+
+                threadLogin = new Thread() {
+                    @Override
+                    public void run() {
+                        Log.d(Util.TAG, "Enter Thread Login");
+                        if(!cloudConnected) {
+                            cloudConnected = (EmotivCloudClient.EC_Connect(ActivityLogin.this) == EmotivCloudErrorCode.EC_OK.ToInt());
+                            if(!cloudConnected) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        txtStatus.setText(getString(R.string.connect_internet));
+                                        myProgressDialog.dismiss();
+                                    }
+                                });
+                                return;
+                            }
                         }
-                        int profileID = EmotivCloudClient.EC_GetProfileId(userCloudID, MY_PROFILE);
-                        if ( profileID < 0) {
-                            txtStatus.setText("Login feito com sucesso, mas perfil não existe. Salve um perfil de treinamento antes.");
-                            return;
-                        }
-                        if(EmotivCloudClient.EC_LoadUserProfile(userCloudID, engineUserID, profileID, -1) == EmotivCloudErrorCode.EC_OK.ToInt()) {
-                            txtStatus.setText("Perfil carregado com sucesso!");
-                        }
-                        else {
-                            txtStatus.setText("Você não pode carregar este perfil. Tente novamente.");
+
+                        if(EmotivCloudClient.EC_Login(EMOTIV_ID, PASSWORD) == EmotivCloudErrorCode.EC_OK.ToInt()) {
+                            userCloudID = EmotivCloudClient.EC_GetUserDetail();
+                            saveCredentials(EMOTIV_ID, PASSWORD, userCloudID);
+                            if(userCloudID != -1) {
+                                if(!Emotiv.isConnected()) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            txtStatus.setText(getString(R.string.connect_emotiv));
+                                            myProgressDialog.dismiss();
+                                        }
+                                    });
+                                    return;
+                                }
+                                int profileID = EmotivCloudClient.EC_GetProfileId(userCloudID, MY_PROFILE);
+                                if ( profileID < 0) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            txtStatus.setText("Login feito com sucesso, mas perfil não existe. Salve um perfil de treinamento antes.");
+                                            myProgressDialog.dismiss();
+                                            btSave.setEnabled(true);
+                                        }
+                                    });
+                                    return;
+                                }
+                                if(EmotivCloudClient.EC_LoadUserProfile(userCloudID, engineUserID, profileID, -1) == EmotivCloudErrorCode.EC_OK.ToInt()) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            txtStatus.setText("Login e Perfil carregados com sucesso!");
+                                            myProgressDialog.dismiss();
+                                            btSave.setEnabled(true);
+                                        }
+                                    });
+                                }else {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            txtStatus.setText("Você não pode carregar este perfil. Tente novamente.");
+                                            myProgressDialog.dismiss();
+                                        }
+                                    });
+                                }
+                            }else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        txtStatus.setText("Você não pode pegar detalhes deste perfil. Tente novamente.");
+                                        myProgressDialog.dismiss();
+                                    }
+                                });
+                            }
+                        }else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    txtStatus.setText("EmotivID ou senha incorretos. Tente novamente.");
+                                    myProgressDialog.dismiss();
+                                }
+                            });
                         }
                     }
-                    else {
-                        txtStatus.setText("Você não pode pegar detalhes deste perfil. Tente novamente.");
-                    }
-                }
-                else {
-                    txtStatus.setText("EmotivID ou senha incorretos. Tente novamente.");
-                }
+                };
+                threadLogin.start();
             }
         });
 
@@ -143,35 +203,65 @@ public class ActivityLogin extends AppCompatActivity {
                     return;
                 }
 
-                // Verifica se há um perfil
-                int profileID = EmotivCloudClient.EC_GetProfileId(userCloudID, MY_PROFILE);
-                // Se houver, deleta o perfil existente
-                if ( profileID > 0) {
-                    if(!(EmotivCloudClient.EC_DeleteUserProfile(userCloudID, profileID) == EmotivCloudErrorCode.EC_OK.ToInt())){
-                        Log.d("TAG", "Não foi possível deletar perfil");
-                    }
-                }
+                showDialog();
+                threadSave = new Thread() {
+                    @Override
+                    public void run() {
+                        Log.d(Util.TAG, "Enter Thread Save");
 
-                // Salva ou sobrescreve um novo perfil
-                if(EmotivCloudClient.EC_SaveUserProfile(userCloudID, engineUserID, MY_PROFILE, EmotivCloudClient.profileFileType.TRAINING.ToInt() ) == EmotivCloudErrorCode.EC_OK.ToInt()) {
-                    txtStatus.setText(getString(R.string.msgPerfil));
-                }else {
-                    txtStatus.setText(getString(R.string.connect_internet));
-                }
+                        if(!(EmotivCloudClient.EC_DeleteUserProfile(userCloudID,
+                                EmotivCloudClient.EC_GetProfileId(userCloudID, MY_PROFILE))
+                                == EmotivCloudErrorCode.EC_OK.ToInt())){
+                            Log.d(Util.TAG, "Não foi possível deletar perfil");
+                        }else{
+                            Log.d(Util.TAG, "Perfil deletado");
+                        }
+
+                        // Salva ou sobrescreve um novo perfil
+                        if(EmotivCloudClient.EC_SaveUserProfile(userCloudID, engineUserID, MY_PROFILE, EmotivCloudClient.profileFileType.TRAINING.ToInt() ) == EmotivCloudErrorCode.EC_OK.ToInt()) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    txtStatus.setText(getString(R.string.msgPerfil));
+                                    myProgressDialog.dismiss();
+                                    Log.d(Util.TAG, "Success Save UserCloudID " + userCloudID);
+                                }
+                            });
+                        }else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    txtStatus.setText("Perfil já existe ou não pode criar um novo perfil.");
+                                    myProgressDialog.dismiss();
+                                    Log.d(Util.TAG, "Error Save UserCloudID " + userCloudID);
+                                }
+                            });
+                        }
+                    }
+                };
+                threadSave.start();
             }
         });
     }
 
-    public void saveCredentials(String login, String pass){
+    private void showDialog(){
+        myProgressDialog = ProgressDialog
+                            .show(ActivityLogin.this,
+                            "Aguarde", "Conectando-se com servidor", true, false);
+    }
+
+    public void saveCredentials(String login, String pass, int userCloud){
         getPreferences(Context.MODE_PRIVATE).edit()
                 .putString("login", login)
                 .putString("password", pass)
+                .putInt("userCloudID", userCloud)
                 .apply();
     }
 
     public void getCredentials(){
         txtEmotivId.setText(getPreferences(Context.MODE_PRIVATE).getString("login", ""));
         txtPass.setText(getPreferences(Context.MODE_PRIVATE).getString("password", ""));
+        userCloudID = getPreferences(Context.MODE_PRIVATE).getInt("userCloudID", -1);
     }
 
     @Override
@@ -187,16 +277,28 @@ public class ActivityLogin extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        Timer timer = new Timer();
-        timer.schedule(initTimerTask(), 0, 10);
+        createTimerTask();
         Log.d(Util.TAG, "Login OnResume - TimerInit");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        timerTask.cancel();
+        stopTimertask();
         Log.d(Util.TAG, "Login OnPause - Timer Cancel");
+    }
+
+    private void createTimerTask(){
+        // Roda um TimerTask com delay inicial 0 a cada 10 milissegundos
+        timer = new Timer();
+        timer.schedule(initTimerTask(), 0, 10);
+    }
+
+    private void stopTimertask(){
+        timerTask.cancel();
+        timer.cancel();
+        timerTask = null;
+        timer = null;
     }
 
     public TimerTask initTimerTask() {
