@@ -77,6 +77,8 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     public void onResume() {
         super.onResume();
         engineTrain.createTimerTask();
+        // seta data do spinner
+        setDataSpinner();
         Log.d(Util.TAG, "Train OnResume - TimerInit");
     }
 
@@ -88,7 +90,6 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     }
 
     public void init() {
-        spinnerAction = (Spinner) rootView.findViewById(R.id.spinnerAction);
         btnTrain = (Button) rootView.findViewById(R.id.btstartTraing);
         btnClear = (Button) rootView.findViewById(R.id.btClearData);
         btnClear.setOnClickListener(new View.OnClickListener() {
@@ -139,8 +140,11 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
             }
         });
 
-        // seta o spinner
-        setDataSpinner();
+        // Spinner com comandos
+        spinnerAction = (Spinner) rootView.findViewById(R.id.spinnerAction);
+        spinAdapter = new AdapterSpinner(activityContext, R.layout.row, model);
+        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAction.setAdapter(spinAdapter);
 
         // muda o item do spinner atual
         spinnerAction.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -273,6 +277,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
             imgBox.setScaleY((float) (power > 0 ? Math.min(1, (imgBox.getScaleY() + power)) : Math.max(1, (imgBox.getScaleY() + power))));
         }
     }
+
     public void enableClick() {
         btnClear.setClickable(true);
         spinnerAction.setClickable(true);
@@ -418,9 +423,10 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         progressBarTime.setVisibility(View.INVISIBLE);
         progressBarTime.setProgress(0);
         enableClick();
-    };
+    }
 
     public void setDataSpinner() {
+        Log.d(Util.TAG, "Enter setDataSpinner Train");
         /**
          * Seta o Spinner com os respectivos nomes e se já foram treinados
          */
@@ -430,28 +436,26 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_NEUTRAL.ToInt()));
         model.add(data);
 
-        data=new DataSpinner();
+        data = new DataSpinner();
         data.setTvName("Empurrar");
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()));
         model.add(data);
 
-        data=new DataSpinner();
+        data = new DataSpinner();
         data.setTvName("Puxar");
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()));
         model.add(data);
 
-        data=new DataSpinner();
+        data = new DataSpinner();
         data.setTvName("Esquerda");
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt()));
         model.add(data);
 
-        data=new DataSpinner();
+        data = new DataSpinner();
         data.setTvName("Direita");
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT.ToInt()));
         model.add(data);
 
-        spinAdapter = new AdapterSpinner(activityContext, R.layout.row, model);
-        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerAction.setAdapter(spinAdapter);
+        spinAdapter.notifyDataSetChanged();
     }
 }

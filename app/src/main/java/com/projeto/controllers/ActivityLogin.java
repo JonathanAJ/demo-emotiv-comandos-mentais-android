@@ -57,14 +57,25 @@ public class ActivityLogin extends AppCompatActivity {
         getCredentials();
         initListeners();
 
-        if(EmotivCloudClient.EC_GetUserDetail() != -1)
-            btSave.setEnabled(true);
-
         if(Emotiv.isConnected())
             txtStatus.setText(getString(R.string.connect_emotiv_success));
         else
             txtStatus.setText(getString(R.string.connect_emotiv));
 
+        Thread threadSaveButton = new Thread(){
+            @Override
+            public void run() {
+                if(EmotivCloudClient.EC_GetUserDetail() != -1){
+                 runOnUiThread(new Runnable() {
+                     @Override
+                     public void run() {
+                         btSave.setEnabled(true);
+                     }
+                 });
+                }
+            }
+        };
+        threadSaveButton.start();
     }
 
     private void initListeners(){
@@ -126,6 +137,9 @@ public class ActivityLogin extends AppCompatActivity {
                             userCloudID = EmotivCloudClient.EC_GetUserDetail();
                             saveCredentials(EMOTIV_ID, PASSWORD, userCloudID);
                             if(userCloudID != -1) {
+                                // retornar o ID
+                                Emotiv.setUserID(IEdk.IEE_EmoEngineEventGetUserId());
+
                                 if(!Emotiv.isConnected()) {
                                     runOnUiThread(new Runnable() {
                                         @Override
