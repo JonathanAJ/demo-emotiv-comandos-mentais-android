@@ -232,7 +232,6 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         btnTrain.setText((isTrainning) ? getString(R.string.abort) : getString(R.string.train));
     }
 
-
     public void TimerTask() {
         count = 0;
         timerTask = new TimerTask() {
@@ -302,6 +301,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
     @Override
     public void trainStarted() {
+        progressBarTime.setProgress(0);
         progressBarTime.setVisibility(View.VISIBLE);
         btnClear.setClickable(false);
         spinnerAction.setClickable(false);
@@ -325,15 +325,14 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
                 .setIcon(R.mipmap.ic_launcher)
                 .setPositiveButton("Sim",
                         new DialogInterface.OnClickListener() {
-                            public void onClick(
-                                    DialogInterface dialog,int which) {
-                                engineTrain.setTrainControl(MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_ACCEPT.getType());
+                            public void onClick(DialogInterface dialog, int id) {
+                                engineTrain.setTrainControl(Emotiv.COMMAND_ACCEPT);
                             }
                         })
                 .setNegativeButton("Não",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                engineTrain.setTrainControl(MentalCommandDetection.IEE_MentalCommandTrainingControl_t.MC_REJECT.getType());
+                                engineTrain.setTrainControl(Emotiv.COMMAND_REJECT);
                             }
                         });
 
@@ -427,7 +426,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
     public void setDataSpinner() {
         Log.d(Util.TAG, "Enter setDataSpinner Train");
-        /**
+        /*
          * Seta o Spinner com os respectivos nomes e se já foram treinados
          */
         model.clear();
