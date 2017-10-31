@@ -222,34 +222,41 @@ public class ActivityLogin extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d(Util.TAG, "Enter Thread Save");
-
-                        if(!(EmotivCloudClient.EC_DeleteUserProfile(userCloudID,
-                                EmotivCloudClient.EC_GetProfileId(userCloudID, MY_PROFILE))
-                                == EmotivCloudErrorCode.EC_OK.ToInt())){
-                            Log.d(Util.TAG, "Não foi possível deletar perfil");
-                        }else{
-                            Log.d(Util.TAG, "Perfil deletado");
-                        }
-
-                        // Salva ou sobrescreve um novo perfil
-                        if(EmotivCloudClient.EC_SaveUserProfile(userCloudID, engineUserID, MY_PROFILE, EmotivCloudClient.profileFileType.TRAINING.ToInt() ) == EmotivCloudErrorCode.EC_OK.ToInt()) {
+                        int profileID = EmotivCloudClient.EC_GetProfileId(userCloudID, MY_PROFILE);
+                        // Se existir um profile, atualiza.
+                        if (profileID >= 0) {
+                            if (EmotivCloudClient.EC_UpdateUserProfile(userCloudID, engineUserID, profileID, MY_PROFILE)
+                                    == EmotivCloudErrorCode.EC_OK.ToInt()) {
+                                Log.d(Util.TAG, "Perfil update");
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        txtStatus.setText(getString(R.string.msgPerfil));
+                                        myProgressDialog.dismiss();
+                                    }
+                                });
+                            } else {
+                                Log.d(Util.TAG, "Perfil not update");
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        txtStatus.setText("Não foi possível salvar, verifique conexão e tente novamente.");
+                                        myProgressDialog.dismiss();
+                                    }
+                                });
+                            }
+                        // Se não existir um profile, salva.
+                        } else if (EmotivCloudClient.EC_SaveUserProfile(userCloudID, engineUserID, MY_PROFILE,
+                                EmotivCloudClient.profileFileType.TRAINING.ToInt()) == EmotivCloudErrorCode.EC_OK.ToInt()){
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     txtStatus.setText(getString(R.string.msgPerfil));
                                     myProgressDialog.dismiss();
-                                    Log.d(Util.TAG, "Success Save UserCloudID " + userCloudID);
                                 }
                             });
-                        }else {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    txtStatus.setText("Perfil já existe ou não pode criar um novo perfil.");
-                                    myProgressDialog.dismiss();
-                                    Log.d(Util.TAG, "Error Save UserCloudID " + userCloudID);
-                                }
-                            });
+                        } else {
+                            Log.d(Util.TAG, "Perfil Saving failed");
                         }
                     }
                 };
