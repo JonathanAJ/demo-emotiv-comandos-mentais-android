@@ -20,7 +20,7 @@ public class EngineStatus {
     private Timer timer;
     private int state;
     private static EngineStatus engineInstance = null;
-    private double statusQuality = 0;
+    private double statusQuality;
 
     public static EngineStatus shareInstance(EngineStatusInterface delegate) {
         if (engineInstance == null) {
@@ -64,12 +64,13 @@ public class EngineStatus {
                 // Retorna Emotiv.OK, ERROR ou NO EVENT
                 state = IEdk.IEE_EngineGetNextEvent();
                 if (state == Emotiv.OK) {
+
                     /*
                      * Verifica a qualidade do sinal
                      */
                     int values[] = IEmoStateDLL.IS_GetContactQualityFromAllChannels();
                     int numGood = 0;
-                    for (int value: values) {
+                    for (int value : values) {
                         if (value == IEmoStateDLL.IEE_EEG_ContactQuality_t.IEEG_CQ_GOOD.ordinal())
                             numGood++;
                     }
@@ -77,7 +78,26 @@ public class EngineStatus {
                     statusQuality = ((double) numGood / (double) values.length) * 100.0;
                     Log.d(Util.TAG, "Qualidade: " + statusQuality + "%");
 
-                    handler.sendEmptyMessage(0);
+                    int typeEvent = IEdk.IEE_EmoEngineEventGetType();
+
+                    if(typeEvent == Emotiv.TYPE_USER_ADD){
+                        Log.d(Util.TAG, "Emotiv Conectado");
+                        Emotiv.setConnected(true);
+                        // Retorna o ID do usuário nos eventos IEE_UserAdded e IEE_UserRemoved.
+                        Emotiv.setUserID(IEdk.IEE_EmoEngineEventGetUserId());
+                    }
+                    else if(typeEvent == Emotiv.TYPE_USER_REMOVE){
+                        Log.d(Util.TAG, "Emotiv Desconectado");
+                        Emotiv.setConnected(false);
+                        Emotiv.clearUserID();
+                    }
+                    else if(typeEvent == Emotiv.TYPE_EMOSTATE_UPDATE){
+                        if (!Emotiv.isConnected())
+                            return;
+                        // Retorna um EmoState na memória
+                        IEdk.IEE_EmoEngineEventGetEmoState();
+                        handler.sendEmptyMessage(0);
+                    }
                 }
             }
         };

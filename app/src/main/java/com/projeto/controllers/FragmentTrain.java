@@ -70,7 +70,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         engineTrain = EngineTrain.shareInstance(this);
-        init();
+        initListeners();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         Log.d(Util.TAG, "Train OnPause - Timer Cancel");
     }
 
-    public void init() {
+    private void initListeners() {
         btnTrain = (Button) rootView.findViewById(R.id.btstartTraing);
         btnClear = (Button) rootView.findViewById(R.id.btClearData);
         btnClear.setOnClickListener(new View.OnClickListener() {
