@@ -32,7 +32,6 @@ public class EngineTrain {
     private EngineTrainInterface delegate;
     private TimerTask timerTask;
     private Timer timer;
-    private int state;
     private static EngineTrain engineInstance = null;
 
     public static EngineTrain shareInstance(EngineTrainInterface delegate) {
@@ -64,86 +63,54 @@ public class EngineTrain {
         timerTask = new TimerTask() {
             @Override
             public void run() {
-                /*Conexão com Epoc Plus*/
-                int numberDevice = IEdk.IEE_GetEpocPlusDeviceCount();
-                if (numberDevice != 0) {
-                    Log.d(Util.TAG, "Conectando-se...");
-                    if (!Emotiv.isConnected()) {
-                        // Conecta Epoc+, posicao 0 na lista, modo de configuração falso
-                        IEdk.IEE_ConnectEpocPlusDevice(0, false);
-                    }
-                }
+
                 // Recupera o pŕoximo evento de EmoEngine
-                // Retorna Emotiv.OK, ERROR ou NO EVENT
-                state = IEdk.IEE_EngineGetNextEvent();
+                // Retorna OK, ERROR ou NO EVENT
+                if(Emotiv.isConnected()) {
+                    int state = IEdk.IEE_EngineGetNextEvent();
+                    if (state == Emotiv.OK) {
 
-                if (state == Emotiv.OK) {
-                    /*
-                     * Verifica a qualidade do sinal
-                     */
-                    int values[] = IEmoStateDLL.IS_GetContactQualityFromAllChannels();
-                    int numGood = 0;
-                    for (int value: values) {
-                        if (value == IEmoStateDLL.IEE_EEG_ContactQuality_t.IEEG_CQ_GOOD.ordinal())
-                            numGood++;
-                    }
-                    // calcula a porcentagem da qualidade boa de sinal
-                    double resNumGood = ((double) numGood / (double) values.length) * 100.0;
-                    Log.d(Util.TAG, "Qualidade: " + resNumGood + "%");
+                        int typeEvent = IEdk.IEE_EmoEngineEventGetType();
 
-                    int typeEvent = IEdk.IEE_EmoEngineEventGetType();
+                        if (typeEvent == Emotiv.TYPE_EMOSTATE_UPDATE) {
+                            if (!Emotiv.isConnected())
+                                return;
+                            // Retorna um EmoState na memória
+                            Log.d(Util.TAG, "Train EmoState Update");
+                            IEdk.IEE_EmoEngineEventGetEmoState();
+                            handler.sendMessage(handler.obtainMessage(HANDLER_ACTION_CURRENT));
+                        } else if (typeEvent == Emotiv.TYPE_MENTALCOMMAND) {
 
-                    if(typeEvent == Emotiv.TYPE_USER_ADD){
-                        Log.d(Util.TAG, "Emotiv Conectado");
-                        Emotiv.setConnected(true);
-                        // Retorna o ID do usuário nos eventos IEE_UserAdded e IEE_UserRemoved.
-                        Emotiv.setUserID(IEdk.IEE_EmoEngineEventGetUserId());
-                        handler.sendEmptyMessage(HANDLER_USER_ADD);
-                    }
-                    else if(typeEvent == Emotiv.TYPE_USER_REMOVE){
-                        Log.d(Util.TAG, "Emotiv Desconectado");
-                        Emotiv.setConnected(false);
-                        Emotiv.clearUserID();
-                        handler.sendEmptyMessage(HANDLER_USER_REMOVE);
-                    }
-                    else if(typeEvent == Emotiv.TYPE_EMOSTATE_UPDATE){
-                        if (!Emotiv.isConnected())
-                            return;
-                        // Retorna um EmoState na memória
-                        IEdk.IEE_EmoEngineEventGetEmoState();
-                        handler.sendMessage(handler.obtainMessage(HANDLER_ACTION_CURRENT));
-                    }
-                    else if(typeEvent == Emotiv.TYPE_MENTALCOMMAND){
+                            int typeCommand = MentalCommandDetection.IEE_MentalCommandEventGetType();
 
-                        int typeCommand = MentalCommandDetection.IEE_MentalCommandEventGetType();
+                            if (typeCommand == Emotiv.TYPE_TRAIN_STARTED) {
+                                Log.d(Util.TAG, "MentalCommand training started");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_STARTED);
 
-                        if (typeCommand == Emotiv.TYPE_TRAIN_STARTED) {
-                            Log.d(Util.TAG, "MentalCommand training started");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_STARTED);
+                            } else if (typeCommand == Emotiv.TYPE_TRAIN_SUCCEED) {
+                                Log.d(Util.TAG, "MentalCommand training Succeeded");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_SUCCEED);
 
-                        } else if (typeCommand == Emotiv.TYPE_TRAIN_SUCCEED) {
-                            Log.d(Util.TAG, "MentalCommand training Succeeded");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_SUCCEED);
+                            } else if (typeCommand == Emotiv.TYPE_TRAIN_COMPLETED) {
+                                Log.d(Util.TAG, "MentalCommand training Completed");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_COMPLETED);
 
-                        } else if (typeCommand == Emotiv.TYPE_TRAIN_COMPLETED) {
-                            Log.d(Util.TAG, "MentalCommand training Completed");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_COMPLETED);
+                            } else if (typeCommand == Emotiv.TYPE_TRAIN_ERASED) {
+                                Log.d(Util.TAG, "MentalCommand training erased");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_ERASED);
 
-                        } else if (typeCommand == Emotiv.TYPE_TRAIN_ERASED) {
-                            Log.d(Util.TAG, "MentalCommand training erased");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_ERASED);
+                            } else if (typeCommand == Emotiv.TYPE_TRAIN_FAILED) {
+                                Log.d(Util.TAG, "MentalCommand training failed");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_FAILED);
 
-                        } else if (typeCommand == Emotiv.TYPE_TRAIN_FAILED) {
-                            Log.d(Util.TAG, "MentalCommand training failed");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_FAILED);
+                            } else if (typeCommand == Emotiv.TYPE_TRAIN_REJECTED) {
+                                Log.d(Util.TAG, "MentalCommand training rejected");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_REJECTED);
 
-                        } else if (typeCommand == Emotiv.TYPE_TRAIN_REJECTED) {
-                            Log.d(Util.TAG, "MentalCommand training rejected");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_REJECTED);
-
-                        } else if (typeCommand == Emotiv.TYPE_TRAIN_RESET) {
-                            Log.d(Util.TAG, "MentalCommand training Reset");
-                            handler.sendEmptyMessage(HANDLER_TRAIN_RESET);
+                            } else if (typeCommand == Emotiv.TYPE_TRAIN_RESET) {
+                                Log.d(Util.TAG, "MentalCommand training Reset");
+                                handler.sendEmptyMessage(HANDLER_TRAIN_RESET);
+                            }
                         }
                     }
                 }

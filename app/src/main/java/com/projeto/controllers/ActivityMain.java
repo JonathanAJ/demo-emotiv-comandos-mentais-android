@@ -125,6 +125,20 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        engineConfig.createTimerTask();
+        Log.d(Util.TAG, "Activity OnResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        engineConfig.stopTimertask();
+        Log.d(Util.TAG, "Activity OnPause");
+    }
+
     private void initFragments(Fragment fragment, String tag){
         getSupportFragmentManager()
                 .beginTransaction()
@@ -166,7 +180,7 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
     }
 
     @Override
-    public void userAdd(int userId) {
+    public void userAdd() {
         Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Emotiv conectado.",
                 Snackbar.LENGTH_LONG);
         TextView textView = (TextView) mySnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
@@ -182,7 +196,6 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
         textView.setTextColor(Color.WHITE);
         mySnackbar.show();
     }
-    
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

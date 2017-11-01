@@ -6,8 +6,8 @@ import android.util.Log;
 
 import com.emotiv.insight.IEdk;
 import com.emotiv.insight.IEdkErrorCode;
-import com.emotiv.insight.IEmoStateDLL;
 import com.projeto.interfaces.EngineConfigInterface;
+import com.projeto.util.Emotiv;
 import com.projeto.util.Util;
 
 import java.util.Timer;
@@ -16,10 +16,8 @@ import java.util.TimerTask;
 public class EngineConfig {
 
     private EngineConfigInterface delegate;
-    private boolean isConnected = false;
     private TimerTask timerTask;
     private Timer timer;
-    private int userId = -1;
 
     private static EngineConfig engineInstance = null;
 
@@ -35,79 +33,64 @@ public class EngineConfig {
         Log.d(Util.TAG, "EngineConfig");
     }
 
-    public void newTimerTask(){
-        timerTask();
-        timer = new Timer();
+    public void createTimerTask(){
         // Roda um TimerTask com delay inicial 0 a cada 10 milissegundos
-        timer.schedule(timerTask, 0, 10);
+        timer = new Timer();
+        timer.schedule(initTimerTask(), 0, 10);
     }
 
-    public void cancelTimerTask(){
+    public void stopTimertask(){
         timerTask.cancel();
         timer.cancel();
+        timerTask = null;
+        timer = null;
     }
 
-    private void timerTask() {
-        // Inicializa TimerTask rodando a cada 10 milissegundos
-        if (timerTask == null) {
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-					/*Conexão com Epoc Plus*/
-                    int numberDevice = IEdk.IEE_GetEpocPlusDeviceCount();
-                    if (numberDevice != 0) {
-                        Log.d(Util.TAG, "Config conectando-se...");
-                        if (!isConnected) {
-                            // Conecta Epoc+, posicao 0 na lista, modo de configuração falso
-                            IEdk.IEE_ConnectEpocPlusDevice(0, false);
-                        }
-                    }
-                    // Recupera o pŕoximo evento de EmoEngine
-                    // Retorna OK, ERROR ou NO EVENT
-                    if (IEdk.IEE_EngineGetNextEvent() == IEdkErrorCode.EDK_OK.ToInt()) {
-						/*
-						 * Verifica a qualidade do sinal
-						 */
-                        int values[] = IEmoStateDLL.IS_GetContactQualityFromAllChannels();
-                        int numGood = 0;
-                        for (int value : values) {
-                            if (value == IEmoStateDLL.IEE_EEG_ContactQuality_t.IEEG_CQ_GOOD.ordinal())
-                                numGood++;
-                        }
-                        // calcula a porcentagem da qualidade boa de sinal
-                        double resNumGood = ((double) numGood / (double) values.length) * 100.0;
-                        Log.d(Util.TAG, "Qualidade: " + resNumGood + "%");
-
-                        int typeEvent = IEdk.IEE_EmoEngineEventGetType();
-                        if (typeEvent == IEdk.IEE_Event_t.IEE_UserAdded.ToInt()) {
-                            Log.d(Util.TAG, "Emotiv Conectado Config");
-                            isConnected = true;
-                            // Retorna o ID do usuário nos eventos IEE_UserAdded e IEE_UserRemoved.
-                            userId = IEdk.IEE_EmoEngineEventGetUserId();
-                            handler.sendEmptyMessage(IEdk.IEE_Event_t.IEE_UserAdded.ToInt());
-
-                        } else if (typeEvent == IEdk.IEE_Event_t.IEE_UserRemoved.ToInt()) {
-                            Log.d(Util.TAG, "Emotiv Desconectado Config");
-                            isConnected = false;
-                            userId = -1;
-                            handler.sendEmptyMessage(IEdk.IEE_Event_t.IEE_UserRemoved.ToInt());
-                        }
+    private TimerTask initTimerTask() {
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                /*Conexão com Epoc Plus*/
+                int numberDevice = IEdk.IEE_GetEpocPlusDeviceCount();
+                if (numberDevice != 0) {
+                    Log.d(Util.TAG, "Conectando-se...");
+                    if (!Emotiv.isConnected()) {
+                        // Conecta Epoc+, posicao 0 na lista, modo de configuração falso
+                        IEdk.IEE_ConnectEpocPlusDevice(0, false);
                     }
                 }
-            };
-        }
+                // Recupera o pŕoximo evento de EmoEngine
+                // Retorna OK, ERROR ou NO EVENT
+                int state = IEdk.IEE_EngineGetNextEvent();
+                if (state == Emotiv.OK) {
+                    int typeEvent = IEdk.IEE_EmoEngineEventGetType();
+                    if(typeEvent == Emotiv.TYPE_USER_ADD) {
+                        Log.d(Util.TAG, "Emotiv Conectado");
+                        Emotiv.setConnected(true);
+                        // Retorna o ID do usuário padrão
+                        Emotiv.setUserID(IEdk.IEE_EmoEngineEventGetUserId());
+                        handler.sendEmptyMessage(Emotiv.TYPE_USER_ADD);
+                    }
+                    else if(typeEvent == Emotiv.TYPE_USER_REMOVE) {
+                        Log.d(Util.TAG, "Emotiv Desconectado");
+                        Emotiv.setConnected(false);
+                        Emotiv.clearUserID();
+                        handler.sendEmptyMessage(Emotiv.TYPE_USER_REMOVE);
+                    }
+                }
+            }
+        };
+        return timerTask;
     }
 
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == IEdk.IEE_Event_t.IEE_UserAdded.ToInt()){
-                if (delegate != null)
-                    delegate.userAdd(userId);
-
-            }else if(msg.what == IEdk.IEE_Event_t.IEE_UserRemoved.ToInt()){
-                if (delegate != null)
-                    delegate.userRemoved();
+            if (delegate != null){
+                if (msg.what == Emotiv.TYPE_USER_ADD)
+                        delegate.userAdd();
+                else if(msg.what == Emotiv.TYPE_USER_REMOVE)
+                        delegate.userRemoved();
             }
         }
     };
