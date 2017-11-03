@@ -63,6 +63,23 @@ public class FragmentStatus extends Fragment implements EngineStatusInterface{
 
     @Override
     public void updateStatusQuality(double status) {
-        arcProgress.setProgress((int) status);
+        int statusInt = (int) status;
+        arcProgress.setProgress(statusInt);
+        if(statusInt == 0) {
+            setColorArc(R.color.colorEmotivNo);
+        }else if(statusInt <= 30){
+            setColorArc(R.color.colorEmotivBad);
+        }else if(statusInt <= 60){
+            setColorArc(R.color.colorEmotivMedium);
+        }else if(statusInt <= 90){
+            setColorArc(R.color.colorEmotivGood);
+        }else if(statusInt <= 100){
+            setColorArc(R.color.primary_dark);
+        }
+    }
+
+    private void setColorArc(int color){
+        arcProgress.setFinishedStrokeColor(activityMain.getResources().getColor(color));
+        arcProgress.setTextColor(activityMain.getResources().getColor(color));
     }
 }

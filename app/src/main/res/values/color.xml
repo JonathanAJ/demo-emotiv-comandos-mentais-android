@@ -9,6 +9,11 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
 
+    <color name="colorEmotivNo">#747376</color>
+    <color name="colorEmotivBad">#ffbf3000</color>
+    <color name="colorEmotivMedium">#ffde9000</color>
+    <color name="colorEmotivGood">#ff879900</color>
+
     <color name="color1">#ff1f1f1f</color>
     <color name="color2">#ffbf3000</color>
     <color name="color3">#ffde9000</color>

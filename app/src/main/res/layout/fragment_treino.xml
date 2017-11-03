@@ -82,16 +82,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <Button
+    <android.support.v7.widget.AppCompatButton
         android:id="@+id/btstartTraing"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:enabled="true"
         android:text="Treinar"
-        android:background="@color/primary"
-        android:elevation="0dp"
-        android:textColor="@android:color/white"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:theme="@style/PrimaryButton"
         app:layout_constraintBottom_toTopOf="@+id/ProgressBarpower"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
