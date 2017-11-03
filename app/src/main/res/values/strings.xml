@@ -13,8 +13,10 @@
     <string name="title_activity_activity_trainning">Treino</string>
 
     <string name="connect_internet">Por favor, verifique sua internet e tente novamente.</string>
-    <string name="connect_emotiv">Você precisa conectar seu Emotiv</string>
-    <string name="connect_emotiv_success">Emotiv conectado</string>
+    <string name="message_initial">Bluetooth ligado. Verifique se sua Localização está ligada.</string>
+    <string name="connect_emotiv">Você precisa conectar seu Emotiv!</string>
+    <string name="connect_emotiv_success">Emotiv conectado com sucesso!</string>
+    <string name="connect_emotiv_fail">Emotiv foi desconectado!</string>
     <string name="train">Treinar</string>
     <string name="abort">Abortar treino</string>
     <string name="success">Sucesso</string>
@@ -27,6 +29,9 @@
     <string name="msgLoginWarn">Coloque o EmotivID e Senha!</string>
     <string name="msgPerfil">Perfil salvo com sucesso!</string>
     <string name="msgPerfilWarn">Perfil existe ou não pode ser criado um novo perfil. Verifique conexão.</string>
+
+    <string name="permission_success">Permissão concedida com sucesso!</string>
+    <string name="permission_fail">Aplicativo não funcionará sem essa permissão.</string>
 
     <string name="msgSave">
         É necessário que você tenha acesso à internet e que já tenha treinado algo.

@@ -2,8 +2,7 @@ package com.projeto.interfaces;
 
 public interface EngineTrainInterface {
 	//train
-	void userAdd(int userId);
-	void userRemoved();
+	void onUserRemoved();
 	void trainStarted();
 	void trainSucceed();
 	void trainFailed();

@@ -17,18 +17,6 @@ import java.util.TimerTask;
 
 public class EngineTrain {
 
-    /* Handlers for Train */
-    private static final int HANDLER_TRAIN_STARTED = 1;
-    private static final int HANDLER_TRAIN_SUCCEED = 2;
-    private static final int HANDLER_TRAIN_FAILED = 3;
-    private static final int HANDLER_TRAIN_COMPLETED = 4;
-    private static final int HANDLER_TRAIN_ERASED = 5;
-    private static final int HANDLER_TRAIN_REJECTED = 6;
-    private static final int HANDLER_ACTION_CURRENT = 7;
-    private static final int HANDLER_USER_ADD = 8;
-    private static final int HANDLER_USER_REMOVE = 9;
-    private static final int HANDLER_TRAIN_RESET = 10;
-
     private EngineTrainInterface delegate;
     private TimerTask timerTask;
     private Timer timer;
@@ -63,7 +51,6 @@ public class EngineTrain {
         timerTask = new TimerTask() {
             @Override
             public void run() {
-
                 // Recupera o pŕoximo evento de EmoEngine
                 // Retorna OK, ERROR ou NO EVENT
                 if(Emotiv.isConnected()) {
@@ -72,44 +59,48 @@ public class EngineTrain {
 
                         int typeEvent = IEdk.IEE_EmoEngineEventGetType();
 
-                        if (typeEvent == Emotiv.TYPE_EMOSTATE_UPDATE) {
-                            if (!Emotiv.isConnected())
-                                return;
-                            // Retorna um EmoState na memória
-                            Log.d(Util.TAG, "Train EmoState Update");
+                        if(typeEvent == Emotiv.TYPE_USER_REMOVE) {
+                            Log.d(Util.TAG, "Emotiv Desconectado");
+                            Emotiv.setConnected(false);
+                            Emotiv.clearUserID();
+                            handler.sendEmptyMessage(Emotiv.TYPE_USER_REMOVE);
+
+                        }else if (typeEvent == Emotiv.TYPE_EMOSTATE_UPDATE) {
+                            // Retorna um EmoState na memória quando houver mudanças
                             IEdk.IEE_EmoEngineEventGetEmoState();
-                            handler.sendMessage(handler.obtainMessage(HANDLER_ACTION_CURRENT));
+                            handler.sendMessage(handler.obtainMessage(Emotiv.TYPE_EMOSTATE_UPDATE));
+
                         } else if (typeEvent == Emotiv.TYPE_MENTALCOMMAND) {
 
                             int typeCommand = MentalCommandDetection.IEE_MentalCommandEventGetType();
 
                             if (typeCommand == Emotiv.TYPE_TRAIN_STARTED) {
                                 Log.d(Util.TAG, "MentalCommand training started");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_STARTED);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_STARTED);
 
                             } else if (typeCommand == Emotiv.TYPE_TRAIN_SUCCEED) {
                                 Log.d(Util.TAG, "MentalCommand training Succeeded");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_SUCCEED);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_SUCCEED);
 
                             } else if (typeCommand == Emotiv.TYPE_TRAIN_COMPLETED) {
                                 Log.d(Util.TAG, "MentalCommand training Completed");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_COMPLETED);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_COMPLETED);
 
                             } else if (typeCommand == Emotiv.TYPE_TRAIN_ERASED) {
                                 Log.d(Util.TAG, "MentalCommand training erased");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_ERASED);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_ERASED);
 
                             } else if (typeCommand == Emotiv.TYPE_TRAIN_FAILED) {
                                 Log.d(Util.TAG, "MentalCommand training failed");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_FAILED);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_FAILED);
 
                             } else if (typeCommand == Emotiv.TYPE_TRAIN_REJECTED) {
                                 Log.d(Util.TAG, "MentalCommand training rejected");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_REJECTED);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_REJECTED);
 
                             } else if (typeCommand == Emotiv.TYPE_TRAIN_RESET) {
                                 Log.d(Util.TAG, "MentalCommand training Reset");
-                                handler.sendEmptyMessage(HANDLER_TRAIN_RESET);
+                                handler.sendEmptyMessage(Emotiv.TYPE_TRAIN_RESET);
                             }
                         }
                     }
@@ -122,52 +113,37 @@ public class EngineTrain {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case HANDLER_USER_ADD:
-                    if (delegate != null)
-                        delegate.userAdd(Emotiv.getUserID());
-                    break;
-                case HANDLER_USER_REMOVE:
-                    if (delegate != null)
-                        delegate.userRemoved();
-                    break;
-                case HANDLER_ACTION_CURRENT:
-                    if (delegate != null) {
-                        delegate.currentAction(
-                                IEmoStateDLL.IS_MentalCommandGetCurrentAction(),
-                                IEmoStateDLL.IS_MentalCommandGetCurrentActionPower());
-                    }
-                    break;
-                case HANDLER_TRAIN_STARTED:
-                    if (delegate != null)
-                        delegate.trainStarted();
-                    break;
-                case HANDLER_TRAIN_SUCCEED:
-                    if (delegate != null)
+            if(delegate != null){
+                int type = msg.what;
+
+                if (type == Emotiv.TYPE_EMOSTATE_UPDATE){
+                    delegate.currentAction(IEmoStateDLL.IS_MentalCommandGetCurrentAction(),
+                                           IEmoStateDLL.IS_MentalCommandGetCurrentActionPower());
+                }
+                else if (type == Emotiv.TYPE_USER_REMOVE) {
+                    delegate.onUserRemoved();
+                }
+                else if (type == Emotiv.TYPE_TRAIN_STARTED) {
+                    delegate.trainStarted();
+                }
+                else if (type == Emotiv.TYPE_TRAIN_SUCCEED) {
                         delegate.trainSucceed();
-                    break;
-                case HANDLER_TRAIN_FAILED:
-                    if(delegate != null)
-                        delegate.trainFailed();
-                    break;
-                case HANDLER_TRAIN_COMPLETED:
-                    if (delegate != null)
-                        delegate.trainCompleted();
-                    break;
-                case HANDLER_TRAIN_ERASED:
-                    if (delegate != null)
-                        delegate.trainErased();
-                    break;
-                case HANDLER_TRAIN_REJECTED:
-                    if (delegate != null)
-                        delegate.trainRejected();
-                    break;
-                case HANDLER_TRAIN_RESET:
-                    if (delegate != null)
-                        delegate.trainReset();
-                    break;
-                default:
-                    break;
+                }
+                else if (type == Emotiv.TYPE_TRAIN_FAILED) {
+                    delegate.trainFailed();
+                }
+                else if (type == Emotiv.TYPE_TRAIN_COMPLETED) {
+                    delegate.trainCompleted();
+                }
+                else if (type == Emotiv.TYPE_TRAIN_ERASED) {
+                    delegate.trainErased();
+                }
+                else if (type == Emotiv.TYPE_TRAIN_REJECTED) {
+                    delegate.trainRejected();
+                }
+                else if (type == Emotiv.TYPE_TRAIN_RESET) {
+                    delegate.trainReset();
+                }
             }
         }
     };

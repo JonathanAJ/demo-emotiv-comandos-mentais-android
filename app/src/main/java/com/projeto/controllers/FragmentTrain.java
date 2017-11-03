@@ -44,7 +44,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     private ArrayList<DataSpinner> model = new ArrayList<DataSpinner>();
     private int indexSpinnerAction, _currentAction, count = 0;
 
-    private ActivityMain activityContext;
+    private ActivityMain activityMain;
     private EngineTrain engineTrain;
 
     private Timer timer;
@@ -61,7 +61,6 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        activityContext = (ActivityMain) getActivity();
         rootView = inflater.inflate(R.layout.fragment_treino, container, false);
         return rootView;
     }
@@ -70,6 +69,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         engineTrain = EngineTrain.shareInstance(this);
+        activityMain = (ActivityMain) getActivity();
         initListeners();
     }
 
@@ -129,7 +129,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         viewTreeObserver.addOnWindowFocusChangeListener(new ViewTreeObserver.OnWindowFocusChangeListener() {
             @Override
             public void onWindowFocusChanged(final boolean hasFocus) {
-                Display display = activityContext.getWindowManager().getDefaultDisplay();
+                Display display = activityMain.getWindowManager().getDefaultDisplay();
                 Point size = new Point();
                 display.getSize(size);
                 widthScreen = size.x;
@@ -142,7 +142,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
         // Spinner com comandos
         spinnerAction = (Spinner) rootView.findViewById(R.id.spinnerAction);
-        spinAdapter = new AdapterSpinner(activityContext, R.layout.row, model);
+        spinAdapter = new AdapterSpinner(activityMain, R.layout.row, model);
         spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerAction.setAdapter(spinAdapter);
 
@@ -161,7 +161,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
             @Override
             public void onClick(View v) {
                 if(!Emotiv.isConnected()) {
-                    Toast.makeText(activityContext, getString(R.string.connect_emotiv), Toast.LENGTH_SHORT).show();
+                    activityMain.showMessageSnackbar(R.string.connect_emotiv);
                 }
                 else{
                     switch (indexSpinnerAction) {
@@ -290,13 +290,8 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     }
 
     @Override
-    public void userAdd(int userId) {
-
-    }
-
-    @Override
-    public void userRemoved() {
-
+    public void onUserRemoved() {
+        activityMain.showMessageSnackbar(R.string.connect_emotiv_fail);
     }
 
     @Override
@@ -315,7 +310,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         progressBarTime.setVisibility(View.INVISIBLE);
         btnTrain.setText(getString(R.string.train));
         enableClick();
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityContext);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityMain);
         // set title
         alertDialogBuilder.setTitle(getString(R.string.success));
         // set dialog message
@@ -345,7 +340,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         progressBarTime.setVisibility(View.INVISIBLE);
         btnTrain.setText(getString(R.string.train));
         enableClick();
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityContext);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityMain);
         // set title
         alertDialogBuilder.setTitle(getString(R.string.error));
         // set dialog message
@@ -377,7 +372,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
 
     @Override
     public void trainRejected() {
-        DataSpinner data=model.get(indexSpinnerAction);
+        DataSpinner data = model.get(indexSpinnerAction);
         data.setChecked(false);
         model.set(indexSpinnerAction, data);
         spinAdapter.notifyDataSetChanged();
@@ -394,7 +389,7 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         enableClick();
         isTrainning = false;
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityContext);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activityMain);
         // set title
         alertDialogBuilder.setTitle("Apagado");
         // set dialog message

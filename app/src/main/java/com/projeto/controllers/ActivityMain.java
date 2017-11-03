@@ -25,20 +25,18 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.projeto.dao.EngineConfig;
 import com.projeto.dao.EngineConnector;
-import com.projeto.interfaces.EngineConfigInterface;
+import com.projeto.interfaces.EngineConnectorInterface;
+import com.projeto.util.Emotiv;
 import com.projeto.util.Util;
 
-public class ActivityMain extends AppCompatActivity implements EngineConfigInterface{
+public class ActivityMain extends AppCompatActivity implements EngineConnectorInterface {
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH = 0;
     private BluetoothAdapter mBluetoothAdapter;
 
     private EngineConnector engineConnector;
-    private EngineConfig engineConfig;
-
     private Toolbar toolbar;
 
     private BottomNavigationView bottomNavigationView;
@@ -109,33 +107,25 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
             // Requisita bluethoot ao usuário
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            Toast.makeText(this, "Você deve ligar o Bluetooth e a Localização para conectar com Emotiv", Toast.LENGTH_SHORT).show();
         }else {
             /*
-             * EngineConnector é a classe que controla
-             * e se comunica com o Emotiv. Iniciando conexão.
+             * EngineConnector é a classe que controla e se comunica com o Emotiv.
+             * Iniciando conexão e verificando se há um Emotiv conectado.
              */
             engineConnector = EngineConnector.shareInstance(this);
             Log.d(Util.TAG, "EngineConnector");
-            /*
-             * EngineConfig é a classe responsável por
-             * verificar alterações globais do Emotiv.
-             */
-            engineConfig = EngineConfig.shareInstance(this);
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        engineConfig.createTimerTask();
         Log.d(Util.TAG, "Activity OnResume");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        engineConfig.stopTimertask();
         Log.d(Util.TAG, "Activity OnPause");
     }
 
@@ -151,10 +141,10 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_BLUETOOTH: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Permissão concedida.", Toast.LENGTH_SHORT).show();
+                    showMessageSnackbar(R.string.permission_success);
                     checkConnect();
                 } else {
-                    Toast.makeText(this, "App não funcionará sem essa permissão.", Toast.LENGTH_SHORT).show();
+                    showMessageSnackbar(R.string.permission_fail);
                 }
                 break;
             }
@@ -172,7 +162,10 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
         int idMenu = item.getItemId();
         switch (idMenu){
             case R.id.menuLogin : {
-                Util.mudaTela(this, ActivityLogin.class);
+                if(Emotiv.isConnected())
+                    Util.mudaTela(this, ActivityLogin.class);
+                else
+                    showMessageSnackbar(R.string.connect_emotiv);
                 break;
             }
         }
@@ -180,18 +173,12 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
     }
 
     @Override
-    public void userAdd() {
-        Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Emotiv conectado.",
-                Snackbar.LENGTH_LONG);
-        TextView textView = (TextView) mySnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-        textView.setTextColor(Color.WHITE);
-        mySnackbar.show();
+    public void onUserAdd() {
+        showMessageSnackbar(R.string.connect_emotiv_success);
     }
 
-    @Override
-    public void userRemoved() {
-        Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Emotiv desconectado.",
-                Snackbar.LENGTH_LONG);
+    public void showMessageSnackbar(int res){
+        Snackbar mySnackbar = Snackbar.make(coordinatorLayout, getString(res), Snackbar.LENGTH_LONG);
         TextView textView = (TextView) mySnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
         textView.setTextColor(Color.WHITE);
         mySnackbar.show();
@@ -201,11 +188,7 @@ public class ActivityMain extends AppCompatActivity implements EngineConfigInter
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if(resultCode == Activity.RESULT_OK){
-                Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Bluetooth ligado. Verifique se a Localização está ligada.",
-                                        Snackbar.LENGTH_LONG);
-                TextView textView = (TextView) mySnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-                textView.setTextColor(Color.WHITE);
-                mySnackbar.show();
+                showMessageSnackbar(R.string.message_initial);
             }
             checkConnect();
         }
