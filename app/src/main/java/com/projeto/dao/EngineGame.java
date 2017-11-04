@@ -6,31 +6,30 @@ import android.util.Log;
 
 import com.emotiv.insight.IEdk;
 import com.emotiv.insight.IEmoStateDLL;
-import com.projeto.interfaces.EngineStatusInterface;
+import com.projeto.interfaces.EngineGameInterface;
 import com.projeto.util.Emotiv;
 import com.projeto.util.Util;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class EngineStatus {
+public class EngineGame {
 
-    private EngineStatusInterface delegate;
+    private EngineGameInterface delegate;
     private TimerTask timerTask;
     private Timer timer;
-    private static EngineStatus engineInstance = null;
-    private double statusQuality;
+    private static EngineGame engineInstance = null;
 
-    public static EngineStatus shareInstance(EngineStatusInterface delegate) {
+    public static EngineGame shareInstance(EngineGameInterface delegate) {
         if (engineInstance == null) {
-            engineInstance = new EngineStatus(delegate);
+            engineInstance = new EngineGame(delegate);
         }
         return engineInstance;
     }
 
-    private EngineStatus(EngineStatusInterface delegate){
+    private EngineGame(EngineGameInterface delegate){
         this.delegate = delegate;
-        Log.d(Util.TAG, "EngineStatus");
+        Log.d(Util.TAG, "EngineGame");
     }
 
     public void createTimerTask(){
@@ -58,33 +57,18 @@ public class EngineStatus {
 
                         int typeEvent = IEdk.IEE_EmoEngineEventGetType();
 
-                        if(typeEvent == Emotiv.USER_REMOVED) {
+                        if (typeEvent == Emotiv.USER_REMOVED) {
                             Log.d(Util.TAG, "Emotiv Desconectado");
                             Emotiv.setConnected(false);
                             Emotiv.clearUserID();
                             handler.sendEmptyMessage(Emotiv.USER_REMOVED);
 
-                        } else if(typeEvent == Emotiv.EMOSTATE_UPDATED) {
+                        } else if (typeEvent == Emotiv.EMOSTATE_UPDATED) {
                             // Retorna um EmoState na memória quando houver mudanças
                             IEdk.IEE_EmoEngineEventGetEmoState();
-                            /*
-                             * Verifica a qualidade do sinal
-                             */
-                            int values[] = IEmoStateDLL.IS_GetContactQualityFromAllChannels();
-                            int numGood = 0;
-                            for (int value : values) {
-                                if (value == IEmoStateDLL.IEE_EEG_ContactQuality_t.IEEG_CQ_GOOD.ordinal())
-                                    numGood++;
-                            }
-                            // calcula a porcentagem da qualidade boa de sinal
-                            statusQuality = ((double) numGood / (double) values.length) * 100.0;
-                            Log.d(Util.TAG, "Qualidade: " + statusQuality + "%");
                             handler.sendEmptyMessage(Emotiv.EMOSTATE_UPDATED);
                         }
                     }
-                }else{
-                    statusQuality = 0;
-                    handler.sendEmptyMessage(Emotiv.EMOSTATE_UPDATED);
                 }
             }
         };
@@ -94,13 +78,12 @@ public class EngineStatus {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if(delegate != null){
+            if(delegate != null) {
                 int type = msg.what;
-
-                if(type == Emotiv.EMOSTATE_UPDATED){
-                    delegate.updateStatusQuality(statusQuality);
-
-                }else if(type == Emotiv.USER_REMOVED){
+                if (type == Emotiv.EMOSTATE_UPDATED) {
+                    delegate.currentAction(IEmoStateDLL.IS_MentalCommandGetCurrentAction(),
+                            IEmoStateDLL.IS_MentalCommandGetCurrentActionPower());
+                } else if (type == Emotiv.USER_REMOVED) {
                     delegate.onUserRemoved();
                 }
             }
