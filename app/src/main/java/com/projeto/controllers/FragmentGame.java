@@ -12,7 +12,7 @@ import com.projeto.dao.EngineGame;
 import com.projeto.interfaces.EngineGameInterface;
 import com.projeto.util.Emotiv;
 import com.projeto.util.Util;
-import com.projeto.views.GameMentalView;
+import com.projeto.game.GameMentalView;
 
 public class FragmentGame extends Fragment implements EngineGameInterface{
 
@@ -49,17 +49,18 @@ public class FragmentGame extends Fragment implements EngineGameInterface{
 
     @Override
     public void currentAction(int typeAction, float power) {
-        if(typeAction == Emotiv.COMMAND_PUSH){
-            gameMentalView.getGameMentalDraw().moveToTopWith(power);
-        }
-        else if(typeAction == Emotiv.COMMAND_PULL){
-            gameMentalView.getGameMentalDraw().moveToBottomWith(power);
-        }
-        else if(typeAction == Emotiv.COMMAND_LEFT){
-            gameMentalView.getGameMentalDraw().moveToLeftWith(power);
-        }
-        else if(typeAction == Emotiv.COMMAND_RIGHT){
-            gameMentalView.getGameMentalDraw().moveToRightWith(power);
+        if(gameMentalView != null && gameMentalView.getGameMentalDraw() != null) {
+            if (typeAction == Emotiv.COMMAND_NEUTRAL) {
+                gameMentalView.getGameMentalDraw().toIdle();
+            } else if (typeAction == Emotiv.COMMAND_PUSH) {
+                gameMentalView.getGameMentalDraw().moveToTopWith(power);
+            } else if (typeAction == Emotiv.COMMAND_PULL) {
+                gameMentalView.getGameMentalDraw().moveToBottomWith(power);
+            } else if (typeAction == Emotiv.COMMAND_LEFT) {
+                gameMentalView.getGameMentalDraw().moveToLeftWith(power);
+            } else if (typeAction == Emotiv.COMMAND_RIGHT) {
+                gameMentalView.getGameMentalDraw().moveToRightWith(power);
+            }
         }
     }
 

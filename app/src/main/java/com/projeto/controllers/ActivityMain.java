@@ -22,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,16 +91,20 @@ public class ActivityMain extends AppCompatActivity implements EngineConnectorIn
                 int id = item.getItemId();
 
                 if (id == R.id.navigation_status){
+                    toolbar.setVisibility(View.VISIBLE);
                     initFragments(fragmentStatus, "txtStatus");
                 }else if (id == R.id.navigation_treino){
+                    toolbar.setVisibility(View.VISIBLE);
                     initFragments(fragmentTrain, "train");
                 }else if (id == R.id.navigation_jogo){
+                    toolbar.setVisibility(View.GONE);
                     initFragments(fragmentGame, "game");
                 }
                 return true;
             }
         });
-        bottomNavigationView.setSelectedItemId(R.id.navigation_status);
+//        bottomNavigationView.setSelectedItemId(R.id.navigation_status);
+        bottomNavigationView.setSelectedItemId(R.id.navigation_jogo);
     }
 
     private void checkConnect(){

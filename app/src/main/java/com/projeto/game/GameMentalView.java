@@ -1,9 +1,8 @@
-package com.projeto.views;
+package com.projeto.game;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -15,6 +14,7 @@ import java.util.TimerTask;
 
 public class GameMentalView extends SurfaceView implements SurfaceHolder.Callback {
 
+    private Context context;
     private SurfaceHolder holder;
     private Canvas canvas;
     private Timer timer;
@@ -27,6 +27,7 @@ public class GameMentalView extends SurfaceView implements SurfaceHolder.Callbac
 
     public GameMentalView(Context context){
         super(context);
+        this.context = context;
         holder = getHolder();
         holder.addCallback(this);
     }
@@ -38,9 +39,9 @@ public class GameMentalView extends SurfaceView implements SurfaceHolder.Callbac
                 canvas = holder.lockCanvas();
                 if(canvas != null){
                     if(gameMentalDraw == null){
-                        gameMentalDraw = new GameMentalDraw(canvas);
+                        gameMentalDraw = new GameMentalDraw(canvas, context);
                     }
-                    canvas.drawColor(Color.BLACK);
+                    canvas.drawColor(Color.WHITE);
                     gameMentalDraw.onDrawGame(canvas);
                     holder.unlockCanvasAndPost(canvas);
                 }
@@ -53,7 +54,7 @@ public class GameMentalView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(Util.TAG, "SurfaceGame Create");
         timer = new Timer();
-        timer.schedule(initGameLoop(), 0, 10);
+        timer.schedule(initGameLoop(), 0, 1000 / 60);
     }
 
     @Override
