@@ -53,7 +53,11 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
     float _currentPower = 0;
     float startLeft     = -1;
     float startRight    = 0;
+    float startTop      = -1;
+    float startBottom   = 0;
+
     float widthScreen   = 0;
+    float heightScreen  = 0;
 
     boolean isTrainning = false;
 
@@ -124,6 +128,8 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         progressBarTime.setVisibility(View.INVISIBLE);
         progressPower = (ProgressBar) rootView.findViewById(R.id.ProgressBarpower);
         imgBox = (ImageView) rootView.findViewById(R.id.imgBox);
+        imgBox.bringToFront();
+        imgBox.invalidate();
 
         final ViewTreeObserver viewTreeObserver = rootView.getViewTreeObserver();
         viewTreeObserver.addOnWindowFocusChangeListener(new ViewTreeObserver.OnWindowFocusChangeListener() {
@@ -133,9 +139,12 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
                 Point size = new Point();
                 display.getSize(size);
                 widthScreen = size.x;
+                heightScreen = size.y;
                 if (imgBox != null) {
                     startLeft = imgBox.getLeft();
                     startRight = imgBox.getRight();
+                    startTop = imgBox.getTop();
+                    startBottom = imgBox.getBottom();
                 }
             }
         });
@@ -247,34 +256,71 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         if(isTrainning){
             imgBox.setLeft((int) startLeft);
             imgBox.setRight((int) startRight);
-            imgBox.setScaleX(1.0f);
-            imgBox.setScaleY(1.0f);
-        }
-        if(( _currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt())  || (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT.ToInt()) && power > 0) {
+            imgBox.setTop((int) startTop);
+            imgBox.setBottom((int) startBottom);
 
-            if(imgBox.getScaleX() == 1.0f && startLeft > 0) {
+//            imgBox.setScaleX(1.0f);
+//            imgBox.setScaleY(1.0f);
+        }
+        // esquerda e direita
+        if(( _currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt())  ||
+                (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_RIGHT.ToInt()) && power > 0) {
+
+            if(startLeft > 0) {
                 imgBox.setRight((int) widthScreen);
-                power = (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt()) ? power*3 : power*-3;
-                imgBox.setLeft((int) (power > 0 ? Math.max(0, (int)(imgBox.getLeft() - power)) : Math.min(widthScreen - imgBox.getMeasuredWidth(), (int)(imgBox.getLeft() - power))));
+                power = (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_LEFT.ToInt()) ?
+                        power*3 : //esquerda
+                        power*-3; //direita
+                imgBox.setLeft((int) (power > 0 ?
+                        Math.max(0, (int)(imgBox.getLeft() - power)) : // esquerda, retorna o maior entre 0 e outro
+                        Math.min(widthScreen - imgBox.getMeasuredWidth(), (int)(imgBox.getLeft() - power)))); // direita, retorna o menor entre 0 e outro
             }
         }
         else if(imgBox.getLeft() != startLeft && startLeft > 0){
             power = (imgBox.getLeft() > startLeft) ? 6 : -6;
-            imgBox.setLeft(power > 0  ? Math.max((int)startLeft, (int)(imgBox.getLeft() - power)) : Math.min((int)startLeft, (int)(imgBox.getLeft() - power)));
+            imgBox.setLeft(power > 0  ?
+                    Math.max((int)startLeft, (int)(imgBox.getLeft() - power)) :
+                    Math.min((int)startLeft, (int)(imgBox.getLeft() - power)));
         }
-        if(((_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()) || (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt())) && power > 0) {
+
+        // Cima e Baixo
+        if(((_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()) ||
+                (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt())) && power > 0) {
             if(imgBox.getLeft() != startLeft)
                 return;
             imgBox.setRight((int) startRight);
-            power = (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()) ? power / 20 : power/-20;
-            imgBox.setScaleX((float) (power > 0 ? Math.max(0.1, (imgBox.getScaleX() - power)) : Math.min(2, (imgBox.getScaleX() - power))));
-            imgBox.setScaleY((float) (power > 0 ? Math.max(0.1, (imgBox.getScaleY() - power)) : Math.min(2, (imgBox.getScaleY() - power))));
+            if(startTop > 0) {
+                imgBox.setBottom((int) heightScreen);
+                power = (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()) ?
+                        power*3 : //top
+                        power*-3; //bottom
+                imgBox.setTop((int) (power > 0 ?
+                        Math.max(0, (int)(imgBox.getTop() - power)) : // top, retorna o maior entre 0 e outro
+                        Math.min(heightScreen - imgBox.getMeasuredHeight(), (int)(imgBox.getTop() - power)))); // bottom, retorna o menor entre 0 e outro
+            }
+
         }
-        else if(imgBox.getScaleX() != 1.0f){
-            power = (imgBox.getScaleX() < 1.0f) ? 0.03f : -0.03f;
-            imgBox.setScaleX((float) (power > 0 ? Math.min(1, (imgBox.getScaleX() + power)) : Math.max(1, (imgBox.getScaleX() + power))));
-            imgBox.setScaleY((float) (power > 0 ? Math.min(1, (imgBox.getScaleY() + power)) : Math.max(1, (imgBox.getScaleY() + power))));
+        else if(imgBox.getTop() != startTop && startTop > 0){
+            power = (imgBox.getTop() > startTop) ? 6 : -6;
+            imgBox.setTop(power > 0  ?
+                    Math.max((int)startTop, (int)(imgBox.getTop() - power)) :
+                    Math.min((int)startTop, (int)(imgBox.getTop() - power)));
+
+
         }
+//        if(((_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()) || (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt())) && power > 0) {
+//            if(imgBox.getLeft() != startLeft)
+//                return;
+//            imgBox.setRight((int) startRight);
+//            power = (_currentAction == IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()) ? power / 20 : power/-20;
+//            imgBox.setScaleX((float) (power > 0 ? Math.max(0.1, (imgBox.getScaleX() - power)) : Math.min(2, (imgBox.getScaleX() - power))));
+//            imgBox.setScaleY((float) (power > 0 ? Math.max(0.1, (imgBox.getScaleY() - power)) : Math.min(2, (imgBox.getScaleY() - power))));
+//        }
+//        else if(imgBox.getScaleX() != 1.0f){
+//            power = (imgBox.getScaleX() < 1.0f) ? 0.03f : -0.03f;
+//            imgBox.setScaleX((float) (power > 0 ? Math.min(1, (imgBox.getScaleX() + power)) : Math.max(1, (imgBox.getScaleX() + power))));
+//            imgBox.setScaleY((float) (power > 0 ? Math.min(1, (imgBox.getScaleY() + power)) : Math.max(1, (imgBox.getScaleY() + power))));
+//        }
     }
 
     public void enableClick() {
@@ -431,12 +477,12 @@ public class FragmentTrain extends Fragment implements EngineTrainInterface {
         model.add(data);
 
         data = new DataSpinner();
-        data.setTvName("Empurrar");
+        data.setTvName("Cima");
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PUSH.ToInt()));
         model.add(data);
 
         data = new DataSpinner();
-        data.setTvName("Puxar");
+        data.setTvName("Baixo");
         data.setChecked(engineTrain.checkTrained(IEmoStateDLL.IEE_MentalCommandAction_t.MC_PULL.ToInt()));
         model.add(data);
 

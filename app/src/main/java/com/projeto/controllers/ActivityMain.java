@@ -103,8 +103,8 @@ public class ActivityMain extends AppCompatActivity implements EngineConnectorIn
                 return true;
             }
         });
-//        bottomNavigationView.setSelectedItemId(R.id.navigation_status);
-        bottomNavigationView.setSelectedItemId(R.id.navigation_jogo);
+        bottomNavigationView.setSelectedItemId(R.id.navigation_status);
+//        bottomNavigationView.setSelectedItemId(R.id.navigation_jogo);
     }
 
     private void checkConnect(){
